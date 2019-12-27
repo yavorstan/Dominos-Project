@@ -1,2 +1,2 @@
 # Dominos-Project
-Domino's Pizza
+Domino's Pizza :pizza:
