@@ -9,8 +9,9 @@ import java.util.List;
 @Getter
 public class GetPizzaDTO {
 
-    private Long id;
+    private long id;
     private String name;
+    private double price;
     private List<GetIngredientDTO> ingredients;
 
 }

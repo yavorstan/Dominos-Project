@@ -22,13 +22,19 @@ public class PizzaController {
         pizzaService.createPizza(createPizzaDTO);
     }
 
-    @GetMapping("/{id}")
-    public GetPizzaDTO getPizzaById(@PathVariable Long id){
-        return pizzaService.getPizzaById(id);
-    }
-
     @GetMapping("/menu")
-    public List<GetPizzaDTO> getMenu(){
+    public List<GetPizzaDTO> getMenu() {
         return pizzaService.getMenu();
     }
+
+    @PatchMapping
+    public void updatePizzaPrice(@RequestBody GetPizzaDTO getPizzaDTO) {
+        pizzaService.updatePizzaPrice(getPizzaDTO);
+    }
+
+    @DeleteMapping("/delete")
+    public void deletePizzaByName(@RequestBody GetPizzaDTO getPizzaDTO) {
+        pizzaService.deletePizzaByName(getPizzaDTO);
+    }
+
 }

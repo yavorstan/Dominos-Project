@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -29,6 +30,7 @@ public class PizzaService {
         }
         Pizza pizza = new Pizza();
         pizza.setName(createPizzaDTO.getName());
+        pizza.setPrice(createPizzaDTO.getPrice());
         for (String s : createPizzaDTO.getIngredients()) {
             Ingredient ingredient = new Ingredient();
             if (ingredientRepository.existsByName(s)) {
@@ -42,21 +44,14 @@ public class PizzaService {
         pizzaRepository.save(pizza);
     }
 
-    public GetPizzaDTO getPizzaById(Long id) {
-        Pizza pizza = pizzaRepository.findById(id).get();
-        GetPizzaDTO getPizzaDTO = new GetPizzaDTO();
-        getPizzaDTO.setId(pizza.getId());
-        getPizzaDTO.setName(pizza.getName());
-        return getPizzaDTO;
-    }
-
     public List<GetPizzaDTO> getMenu() {
         List<Pizza> pizzas = pizzaRepository.findAll();
         List<GetPizzaDTO> getPizzaResponse = new ArrayList<>();
         for (Pizza p : pizzas) {
             GetPizzaDTO getPizzaDTO = new GetPizzaDTO();
-            getPizzaDTO.setName(p.getName());
             getPizzaDTO.setId(p.getId());
+            getPizzaDTO.setName(p.getName());
+            getPizzaDTO.setPrice(p.getPrice());
             List<GetIngredientDTO> list = new ArrayList<>();
             getPizzaDTO.setIngredients(list);
             for (Ingredient i : p.getIngredients()) {
@@ -67,6 +62,25 @@ public class PizzaService {
             }
             getPizzaResponse.add(getPizzaDTO);
         }
-        return getPizzaResponse;
+        return Collections.unmodifiableList(getPizzaResponse);
+    }
+
+    public void deletePizzaByName(GetPizzaDTO getPizzaDTO) {
+        if (!pizzaRepository.existsByName(getPizzaDTO.getName())) {
+            //TODO throw PizzaDoesntExistException
+            return;
+        }
+        Pizza p = pizzaRepository.findByName(getPizzaDTO.getName());
+        pizzaRepository.delete(p);
+    }
+
+    public void updatePizzaPrice(GetPizzaDTO getPizzaDTO) {
+        if (!pizzaRepository.existsByName(getPizzaDTO.getName())) {
+            //TODO throw exception
+            return;
+        }
+        Pizza p = pizzaRepository.findByName(getPizzaDTO.getName());
+        p.setPrice(getPizzaDTO.getPrice());
+        pizzaRepository.save(p);
     }
 }

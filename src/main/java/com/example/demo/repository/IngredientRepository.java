@@ -9,4 +9,5 @@ public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
 
     Ingredient findByName(String name);
 
+    void deleteByName(String name);
 }

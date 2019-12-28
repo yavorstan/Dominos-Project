@@ -9,5 +9,6 @@ public class GetIngredientDTO {
 
     private Long id;
     private String name;
+    private double price;
 
 }

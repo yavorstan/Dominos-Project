@@ -1,6 +1,7 @@
 package com.example.demo.model.entity;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
 import javax.persistence.Entity;
@@ -18,9 +19,10 @@ public class Pizza {
     @Id
     @GeneratedValue
     private Long id;
-
+    @NonNull
     private String name;
-
+    @NonNull
+    private double price;
     @ManyToMany
     private List<Ingredient> ingredients = new ArrayList<>();
 
