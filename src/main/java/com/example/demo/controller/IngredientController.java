@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.exceptions.ElementNotFoundException;
 import com.example.demo.model.dto.GetIngredientDTO;
 import com.example.demo.service.IngredientService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +20,14 @@ public class IngredientController {
         return ingredientService.getIngredients();
     }
 
-    @DeleteMapping("/delete")
-    public void deletePizzaByName(@RequestBody GetIngredientDTO getIngredientDTO) {
-        ingredientService.deleteIngredientByName(getIngredientDTO);
+    @DeleteMapping("/delete/{id}")
+    public void deleteIngredient(GetIngredientDTO getIngredientDTO) throws ElementNotFoundException {
+        ingredientService.deleteIngredient(getIngredientDTO);
+    }
+
+    @PatchMapping("/update")
+    public void updateIngredientPrice(@RequestBody GetIngredientDTO getIngredientDTO) throws ElementNotFoundException {
+        ingredientService.updateIngredientPrice(getIngredientDTO);
     }
 
 }

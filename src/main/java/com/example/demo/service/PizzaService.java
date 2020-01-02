@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import com.example.demo.exceptions.ElementAlreadyExistsException;
+import com.example.demo.exceptions.ElementNotFoundException;
 import com.example.demo.model.dto.CreatePizzaDTO;
 import com.example.demo.model.dto.GetIngredientDTO;
 import com.example.demo.model.dto.GetPizzaDTO;
@@ -23,23 +25,16 @@ public class PizzaService {
     @Autowired
     private IngredientRepository ingredientRepository;
 
-    public void createPizza(CreatePizzaDTO createPizzaDTO) {
+    public void createPizza(CreatePizzaDTO createPizzaDTO) throws ElementAlreadyExistsException, ElementNotFoundException {
         if (pizzaRepository.existsByName(createPizzaDTO.getName())) {
-            //TODO should throw something like "PizzaAlreadyExistsException"
-            return;
+            throw new ElementAlreadyExistsException("Pizza with this name already exists!");
         }
         Pizza pizza = new Pizza();
         pizza.setName(createPizzaDTO.getName());
         pizza.setPrice(createPizzaDTO.getPrice());
         for (String s : createPizzaDTO.getIngredients()) {
-            Ingredient ingredient = new Ingredient();
-            if (ingredientRepository.existsByName(s)) {
-                ingredient = ingredientRepository.findByName(s.toLowerCase());
-            } else {
-                ingredient.setName(s.toLowerCase());
-                ingredientRepository.save(ingredient);
-            }
-            pizza.getIngredients().add(ingredient);
+            pizza.getIngredients().add(ingredientRepository.findByName(s.toLowerCase())
+                    .orElseThrow(() -> new ElementNotFoundException("No ingredient '" + s + "' found!")));
         }
         pizzaRepository.save(pizza);
     }
@@ -52,35 +47,32 @@ public class PizzaService {
             getPizzaDTO.setId(p.getId());
             getPizzaDTO.setName(p.getName());
             getPizzaDTO.setPrice(p.getPrice());
-            List<GetIngredientDTO> list = new ArrayList<>();
+            List<Ingredient> list = new ArrayList<>();
             getPizzaDTO.setIngredients(list);
-            for (Ingredient i : p.getIngredients()) {
+            for (Ingredient ingredient : p.getIngredients()) {
                 GetIngredientDTO getIngredientDTO = new GetIngredientDTO();
-                getIngredientDTO.setId(i.getId());
-                getIngredientDTO.setName(i.getName());
-                getPizzaDTO.getIngredients().add(getIngredientDTO);
+                getIngredientDTO.setId(ingredient.getId());
+                getIngredientDTO.setName(ingredient.getName());
+                getPizzaDTO.getIngredients().add(ingredient);
             }
             getPizzaResponse.add(getPizzaDTO);
         }
         return Collections.unmodifiableList(getPizzaResponse);
     }
 
-    public void deletePizzaByName(GetPizzaDTO getPizzaDTO) {
-        if (!pizzaRepository.existsByName(getPizzaDTO.getName())) {
-            //TODO throw PizzaDoesntExistException
-            return;
-        }
-        Pizza p = pizzaRepository.findByName(getPizzaDTO.getName());
-        pizzaRepository.delete(p);
+    public void deletePizzaById(GetPizzaDTO getPizzaDTO) throws ElementNotFoundException {
+        pizzaRepository.delete(pizzaRepository.findById(getPizzaDTO.getId())
+                .orElseThrow(() -> new ElementNotFoundException("Pizza with this ID not found!")));
     }
 
-    public void updatePizzaPrice(GetPizzaDTO getPizzaDTO) {
-        if (!pizzaRepository.existsByName(getPizzaDTO.getName())) {
-            //TODO throw exception
-            return;
+    public void updatePizzaPrice(GetPizzaDTO getPizzaDTO) throws ElementNotFoundException, IllegalArgumentException {
+        Pizza pizza = pizzaRepository.findByName(getPizzaDTO.getName())
+                .orElseThrow(() -> new ElementNotFoundException("Pizza with this name not found!"));
+        if (getPizzaDTO.getPrice() <= 0) {
+            throw new IllegalArgumentException("Illegal price tag!");
         }
-        Pizza p = pizzaRepository.findByName(getPizzaDTO.getName());
-        p.setPrice(getPizzaDTO.getPrice());
-        pizzaRepository.save(p);
+        pizza.setPrice(getPizzaDTO.getPrice());
+        pizzaRepository.save(pizza);
     }
+
 }

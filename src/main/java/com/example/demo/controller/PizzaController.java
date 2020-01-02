@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import com.example.demo.exceptions.ElementAlreadyExistsException;
+import com.example.demo.exceptions.ElementNotFoundException;
 import com.example.demo.model.dto.CreatePizzaDTO;
 import com.example.demo.model.dto.GetPizzaDTO;
 import com.example.demo.service.PizzaService;
@@ -18,7 +20,7 @@ public class PizzaController {
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    public void createPizza(@RequestBody CreatePizzaDTO createPizzaDTO) {
+    public void createPizza(@RequestBody CreatePizzaDTO createPizzaDTO) throws ElementNotFoundException, ElementAlreadyExistsException {
         pizzaService.createPizza(createPizzaDTO);
     }
 
@@ -27,14 +29,14 @@ public class PizzaController {
         return pizzaService.getMenu();
     }
 
-    @PatchMapping
-    public void updatePizzaPrice(@RequestBody GetPizzaDTO getPizzaDTO) {
+    @PatchMapping("/updatePrice")
+    public void updatePizzaPrice(@RequestBody GetPizzaDTO getPizzaDTO) throws ElementNotFoundException, IllegalArgumentException {
         pizzaService.updatePizzaPrice(getPizzaDTO);
     }
 
-    @DeleteMapping("/delete")
-    public void deletePizzaByName(@RequestBody GetPizzaDTO getPizzaDTO) {
-        pizzaService.deletePizzaByName(getPizzaDTO);
+    @DeleteMapping("/delete/{id}")
+    public void deletePizzaById(GetPizzaDTO getPizzaDTO) throws ElementNotFoundException {
+        pizzaService.deletePizzaById(getPizzaDTO);
     }
 
 }

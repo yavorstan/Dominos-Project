@@ -25,5 +25,4 @@ public class Pizza {
     private double price;
     @ManyToMany
     private List<Ingredient> ingredients = new ArrayList<>();
-
 }
