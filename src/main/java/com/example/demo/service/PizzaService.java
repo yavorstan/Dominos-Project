@@ -33,8 +33,9 @@ public class PizzaService {
         pizza.setName(createPizzaDTO.getName());
         pizza.setPrice(createPizzaDTO.getPrice());
         for (String s : createPizzaDTO.getIngredients()) {
-            pizza.getIngredients().add(ingredientRepository.findByName(s.toLowerCase())
-                    .orElseThrow(() -> new ElementNotFoundException("No ingredient '" + s + "' found!")));
+            Ingredient ingredient = ingredientRepository.findByName(s.toLowerCase())
+                    .orElseThrow(() -> new ElementNotFoundException("No ingredient '" + s + "' found!"));
+            pizza.getIngredients().add(ingredient);
         }
         pizzaRepository.save(pizza);
     }
@@ -42,14 +43,14 @@ public class PizzaService {
     public List<GetPizzaDTO> getMenu() {
         List<Pizza> pizzas = pizzaRepository.findAll();
         List<GetPizzaDTO> getPizzaResponse = new ArrayList<>();
-        for (Pizza p : pizzas) {
+        for (Pizza pizza : pizzas) {
             GetPizzaDTO getPizzaDTO = new GetPizzaDTO();
-            getPizzaDTO.setId(p.getId());
-            getPizzaDTO.setName(p.getName());
-            getPizzaDTO.setPrice(p.getPrice());
+            getPizzaDTO.setId(pizza.getId());
+            getPizzaDTO.setName(pizza.getName());
+            getPizzaDTO.setPrice(pizza.getPrice());
             List<Ingredient> list = new ArrayList<>();
             getPizzaDTO.setIngredients(list);
-            for (Ingredient ingredient : p.getIngredients()) {
+            for (Ingredient ingredient : pizza.getIngredients()) {
                 GetIngredientDTO getIngredientDTO = new GetIngredientDTO();
                 getIngredientDTO.setId(ingredient.getId());
                 getIngredientDTO.setName(ingredient.getName());
@@ -60,14 +61,14 @@ public class PizzaService {
         return Collections.unmodifiableList(getPizzaResponse);
     }
 
-    public void deletePizzaById(GetPizzaDTO getPizzaDTO) throws ElementNotFoundException {
-        pizzaRepository.delete(pizzaRepository.findById(getPizzaDTO.getId())
+    public void deletePizzaById(Long id) throws ElementNotFoundException {
+        pizzaRepository.delete(pizzaRepository.findById(id)
                 .orElseThrow(() -> new ElementNotFoundException("Pizza with this ID not found!")));
     }
 
-    public void updatePizzaPrice(GetPizzaDTO getPizzaDTO) throws ElementNotFoundException, IllegalArgumentException {
-        Pizza pizza = pizzaRepository.findByName(getPizzaDTO.getName())
-                .orElseThrow(() -> new ElementNotFoundException("Pizza with this name not found!"));
+    public void updatePizzaPrice(Long id, GetPizzaDTO getPizzaDTO) throws ElementNotFoundException, IllegalArgumentException {
+        Pizza pizza = pizzaRepository.findById(id)
+                .orElseThrow(() -> new ElementNotFoundException("Pizza with this ID not found!"));
         if (getPizzaDTO.getPrice() <= 0) {
             throw new IllegalArgumentException("Illegal price tag!");
         }

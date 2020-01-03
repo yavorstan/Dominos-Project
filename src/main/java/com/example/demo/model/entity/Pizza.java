@@ -1,13 +1,11 @@
 package com.example.demo.model.entity;
 
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,12 +15,15 @@ import java.util.List;
 public class Pizza {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @NonNull
+
+    @NotBlank(message = "Name is mandatory")
     private String name;
-    @NonNull
+
+    @NotNull(message = "Price is mandatory")
     private double price;
+
     @ManyToMany
     private List<Ingredient> ingredients = new ArrayList<>();
 }
