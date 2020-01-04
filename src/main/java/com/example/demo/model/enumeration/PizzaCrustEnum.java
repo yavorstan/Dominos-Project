@@ -1,5 +1,8 @@
 package com.example.demo.model.enumeration;
 
+import lombok.Getter;
+
+@Getter
 public enum PizzaCrustEnum {
 
     //sample

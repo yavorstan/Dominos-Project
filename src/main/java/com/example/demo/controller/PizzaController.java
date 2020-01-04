@@ -3,7 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.exceptions.ElementAlreadyExistsException;
 import com.example.demo.exceptions.ElementNotFoundException;
 import com.example.demo.exceptions.ErrorCreatingEntityException;
-import com.example.demo.model.dto.CreatePizzaDTO;
+import com.example.demo.model.dto.PostPizzaDTO;
 import com.example.demo.model.dto.GetPizzaDTO;
 import com.example.demo.service.PizzaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,14 +23,14 @@ public class PizzaController {
     private PizzaService pizzaService;
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public ResponseEntity createPizza(@Valid @RequestBody CreatePizzaDTO createPizzaDTO, Errors errors)
+    public ResponseEntity<GetPizzaDTO> createPizza(@Valid @RequestBody PostPizzaDTO postPizzaDTO, Errors errors)
             throws ElementNotFoundException, ElementAlreadyExistsException, ErrorCreatingEntityException {
+        //TODO exception handler
         if (errors.hasErrors()) {
-            throw new ErrorCreatingEntityException("Error!");
+            throw new ErrorCreatingEntityException(errors.getFieldError().getDefaultMessage());
         }
-        pizzaService.createPizza(createPizzaDTO);
-        //TODO return PizzaDTO
-        return ResponseEntity.status(HttpStatus.CREATED).body(createPizzaDTO);
+        GetPizzaDTO getPizzaDTO = pizzaService.createPizza(postPizzaDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(getPizzaDTO);
     }
 
     @RequestMapping(value = "/menu", method = RequestMethod.GET)

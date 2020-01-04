@@ -23,14 +23,13 @@ public class IngredientController {
     IngredientService ingredientService;
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public ResponseEntity createIngredient(@Valid @RequestBody PostIngredientDTO postIngredientDTO, Errors errors)
+    public ResponseEntity<GetIngredientDTO> createIngredient(@Valid @RequestBody PostIngredientDTO postIngredientDTO, Errors errors)
             throws ErrorCreatingEntityException, ElementAlreadyExistsException {
         if (errors.hasErrors()) {
             throw new ErrorCreatingEntityException("Error");
         }
-        ingredientService.createIngredient(postIngredientDTO);
-        //TODO return ingredientDTO
-        return ResponseEntity.status(HttpStatus.CREATED).body(postIngredientDTO);
+        GetIngredientDTO getIngredientDTO = ingredientService.createIngredient(postIngredientDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(getIngredientDTO);
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)

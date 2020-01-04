@@ -1,5 +1,8 @@
 package com.example.demo.model.enumeration;
 
+import lombok.Getter;
+
+@Getter
 public enum PizzaSizeEnum {
 
     //sample price multiplier for different sizes

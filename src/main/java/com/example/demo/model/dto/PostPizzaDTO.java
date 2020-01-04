@@ -2,13 +2,13 @@ package com.example.demo.model.dto;
 
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import java.util.List;
 
 @Getter
-@Setter
-public class PostIngredientDTO {
+public class PostPizzaDTO {
 
     @NotBlank(message = "Name is mandatory!")
     private String name;
@@ -16,4 +16,6 @@ public class PostIngredientDTO {
     @NonNull
     private double price;
 
+    @NotEmpty(message = "Pizza must have some ingredients")
+    private List<String> ingredients;
 }

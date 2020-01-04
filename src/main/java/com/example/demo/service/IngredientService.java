@@ -18,29 +18,32 @@ import java.util.List;
 public class IngredientService {
 
     @Autowired
-    IngredientRepository ingredientRepository;
+    private IngredientRepository ingredientRepository;
 
-    public void createIngredient(PostIngredientDTO postIngredientDTO) throws ElementAlreadyExistsException {
+    public GetIngredientDTO createIngredient(PostIngredientDTO postIngredientDTO) throws ElementAlreadyExistsException {
         if (ingredientRepository.existsByName(postIngredientDTO.getName())) {
             throw new ElementAlreadyExistsException("There is an ingredient with this name!");
         }
         Ingredient ingredient = new Ingredient();
         ingredient.setName(postIngredientDTO.getName());
         ingredient.setPrice(postIngredientDTO.getPrice());
-        ingredientRepository.save(ingredient);
+        return ingredientEntityToDTO(ingredientRepository.save(ingredient));
     }
 
     public List<GetIngredientDTO> getIngredients() {
         ArrayList<GetIngredientDTO> ingredients = new ArrayList<>();
-        GetIngredientDTO getIngredientDTO;
         for (Ingredient ingredient : ingredientRepository.findAll()) {
-            getIngredientDTO = new GetIngredientDTO();
-            getIngredientDTO.setId(ingredient.getId());
-            getIngredientDTO.setName(ingredient.getName());
-            getIngredientDTO.setPrice(ingredient.getPrice());
-            ingredients.add(getIngredientDTO);
+            ingredients.add(ingredientEntityToDTO(ingredient));
         }
         return Collections.unmodifiableList(ingredients);
+    }
+
+    private GetIngredientDTO ingredientEntityToDTO(Ingredient ingredient) {
+        GetIngredientDTO getIngredientDTO = new GetIngredientDTO();
+        getIngredientDTO.setId(ingredient.getId());
+        getIngredientDTO.setName(ingredient.getName());
+        getIngredientDTO.setPrice(ingredient.getPrice());
+        return getIngredientDTO;
     }
 
     @Transactional

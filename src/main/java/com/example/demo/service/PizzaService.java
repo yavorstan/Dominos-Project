@@ -2,9 +2,9 @@ package com.example.demo.service;
 
 import com.example.demo.exceptions.ElementAlreadyExistsException;
 import com.example.demo.exceptions.ElementNotFoundException;
-import com.example.demo.model.dto.CreatePizzaDTO;
 import com.example.demo.model.dto.GetIngredientDTO;
 import com.example.demo.model.dto.GetPizzaDTO;
+import com.example.demo.model.dto.PostPizzaDTO;
 import com.example.demo.model.entity.Ingredient;
 import com.example.demo.model.entity.Pizza;
 import com.example.demo.repository.IngredientRepository;
@@ -25,40 +25,46 @@ public class PizzaService {
     @Autowired
     private IngredientRepository ingredientRepository;
 
-    public void createPizza(CreatePizzaDTO createPizzaDTO) throws ElementAlreadyExistsException, ElementNotFoundException {
-        if (pizzaRepository.existsByName(createPizzaDTO.getName())) {
+    public GetPizzaDTO createPizza(PostPizzaDTO postPizzaDTO) throws ElementAlreadyExistsException, ElementNotFoundException {
+        if (pizzaRepository.existsByName(postPizzaDTO.getName())) {
             throw new ElementAlreadyExistsException("Pizza with this name already exists!");
         }
         Pizza pizza = new Pizza();
-        pizza.setName(createPizzaDTO.getName());
-        pizza.setPrice(createPizzaDTO.getPrice());
-        for (String s : createPizzaDTO.getIngredients()) {
+        pizza.setName(postPizzaDTO.getName());
+        pizza.setPrice(postPizzaDTO.getPrice());
+        for (String s : postPizzaDTO.getIngredients()) {
             Ingredient ingredient = ingredientRepository.findByName(s.toLowerCase())
                     .orElseThrow(() -> new ElementNotFoundException("No ingredient '" + s + "' found!"));
             pizza.getIngredients().add(ingredient);
         }
-        pizzaRepository.save(pizza);
+        return pizzaEntityToDTO(pizzaRepository.save(pizza));
     }
 
     public List<GetPizzaDTO> getMenu() {
         List<Pizza> pizzas = pizzaRepository.findAll();
         List<GetPizzaDTO> getPizzaResponse = new ArrayList<>();
         for (Pizza pizza : pizzas) {
-            GetPizzaDTO getPizzaDTO = new GetPizzaDTO();
-            getPizzaDTO.setId(pizza.getId());
-            getPizzaDTO.setName(pizza.getName());
-            getPizzaDTO.setPrice(pizza.getPrice());
-            List<Ingredient> list = new ArrayList<>();
-            getPizzaDTO.setIngredients(list);
-            for (Ingredient ingredient : pizza.getIngredients()) {
-                GetIngredientDTO getIngredientDTO = new GetIngredientDTO();
-                getIngredientDTO.setId(ingredient.getId());
-                getIngredientDTO.setName(ingredient.getName());
-                getPizzaDTO.getIngredients().add(ingredient);
-            }
+            GetPizzaDTO getPizzaDTO = pizzaEntityToDTO(pizza);
             getPizzaResponse.add(getPizzaDTO);
         }
         return Collections.unmodifiableList(getPizzaResponse);
+    }
+
+    private GetPizzaDTO pizzaEntityToDTO(Pizza pizza) {
+        GetPizzaDTO getPizzaDTO = new GetPizzaDTO();
+        getPizzaDTO.setId(pizza.getId());
+        getPizzaDTO.setName(pizza.getName());
+        getPizzaDTO.setPrice(pizza.getPrice());
+        List<GetIngredientDTO> list = new ArrayList<>();
+        getPizzaDTO.setIngredients(list);
+        for (Ingredient ingredient : pizza.getIngredients()) {
+            GetIngredientDTO getIngredientDTO = new GetIngredientDTO();
+            getIngredientDTO.setId(ingredient.getId());
+            getIngredientDTO.setName(ingredient.getName());
+            getIngredientDTO.setPrice(ingredient.getPrice());
+            getPizzaDTO.getIngredients().add(getIngredientDTO);
+        }
+        return getPizzaDTO;
     }
 
     public void deletePizzaById(Long id) throws ElementNotFoundException {
