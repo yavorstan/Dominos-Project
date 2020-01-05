@@ -6,13 +6,13 @@ import lombok.Getter;
 public enum PizzaCrustEnum {
 
     //sample
-    NORMAL(1),
+    NORMAL(0),
     ITALIAN(1.3),
-    PHILADELPHIA(1.7);
+    PHILADELPHIA(2.3);
 
-    private double priceMultiplier;
+    private double additionalPrice;
 
-    PizzaCrustEnum(double priceMultiplier){
-        this.priceMultiplier = priceMultiplier;
+    PizzaCrustEnum(double additionalPrice){
+        this.additionalPrice = additionalPrice;
     }
 }

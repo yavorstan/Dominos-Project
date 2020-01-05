@@ -25,6 +25,11 @@ public class PizzaService {
     @Autowired
     private IngredientRepository ingredientRepository;
 
+    public Pizza findById(Long id) throws ElementNotFoundException {
+        return pizzaRepository.findById(id)
+                .orElseThrow(() -> new ElementNotFoundException("Not pizza with this ID found!"));
+    }
+
     public GetPizzaDTO createPizza(PostPizzaDTO postPizzaDTO) throws ElementAlreadyExistsException, ElementNotFoundException {
         if (pizzaRepository.existsByName(postPizzaDTO.getName())) {
             throw new ElementAlreadyExistsException("Pizza with this name already exists!");
@@ -50,7 +55,7 @@ public class PizzaService {
         return Collections.unmodifiableList(getPizzaResponse);
     }
 
-    private GetPizzaDTO pizzaEntityToDTO(Pizza pizza) {
+    public GetPizzaDTO pizzaEntityToDTO(Pizza pizza) {
         GetPizzaDTO getPizzaDTO = new GetPizzaDTO();
         getPizzaDTO.setId(pizza.getId());
         getPizzaDTO.setName(pizza.getName());

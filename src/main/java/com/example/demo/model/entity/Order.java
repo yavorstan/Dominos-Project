@@ -1,5 +1,6 @@
 package com.example.demo.model.entity;
 
+import com.example.demo.model.enumeration.TypeOfOrder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,5 +26,8 @@ public class Order {
 
     @ManyToOne
     private User user;
+
+    @Enumerated
+    private TypeOfOrder typeOfOrder;
 
 }

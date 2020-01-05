@@ -5,14 +5,15 @@ import lombok.Getter;
 @Getter
 public enum PizzaSizeEnum {
 
-    //sample price multiplier for different sizes
-    SMALL(0.7),
-    MEDIUM(1),
-    LARGE(1.5);
+    //sample price addition for different sizes
+    SMALL(-1.5),
+    MEDIUM(0),
+    LARGE(3.6),
+    JUMBO(7.1);
 
-    private double priceMultiplier;
+    private double additionalPrice;
 
-    PizzaSizeEnum(double priceMultiplier){
-        this.priceMultiplier = priceMultiplier;
+    PizzaSizeEnum(double additionalPrice) {
+        this.additionalPrice = additionalPrice;
     }
 }

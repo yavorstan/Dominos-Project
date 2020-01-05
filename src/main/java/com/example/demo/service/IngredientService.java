@@ -20,6 +20,19 @@ public class IngredientService {
     @Autowired
     private IngredientRepository ingredientRepository;
 
+    public Ingredient findById(Long id) throws ElementNotFoundException {
+        return ingredientRepository.findById(id)
+                .orElseThrow(() -> new ElementNotFoundException("No such ingredient!"));
+    }
+
+    public List<Ingredient> ingredientIdToEntity(List<Long> ids) throws ElementNotFoundException {
+        List<Ingredient> ingredients = new ArrayList<>();
+        for (Long id : ids) {
+            ingredients.add(findById(id));
+        }
+        return ingredients;
+    }
+
     public GetIngredientDTO createIngredient(PostIngredientDTO postIngredientDTO) throws ElementAlreadyExistsException {
         if (ingredientRepository.existsByName(postIngredientDTO.getName())) {
             throw new ElementAlreadyExistsException("There is an ingredient with this name!");
@@ -38,7 +51,7 @@ public class IngredientService {
         return Collections.unmodifiableList(ingredients);
     }
 
-    private GetIngredientDTO ingredientEntityToDTO(Ingredient ingredient) {
+    public GetIngredientDTO ingredientEntityToDTO(Ingredient ingredient) {
         GetIngredientDTO getIngredientDTO = new GetIngredientDTO();
         getIngredientDTO.setId(ingredient.getId());
         getIngredientDTO.setName(ingredient.getName());
