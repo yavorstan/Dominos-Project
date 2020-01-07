@@ -9,7 +9,6 @@ import com.example.demo.repository.IngredientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,20 +19,16 @@ public class IngredientService {
     @Autowired
     private IngredientRepository ingredientRepository;
 
-    public Ingredient findById(Long id) throws ElementNotFoundException {
-        return ingredientRepository.findById(id)
-                .orElseThrow(() -> new ElementNotFoundException("No such ingredient!"));
-    }
-
-    public List<Ingredient> ingredientIdToEntity(List<Long> ids) throws ElementNotFoundException {
+    public List<Ingredient> findIngredientByName(List<String> names){
         List<Ingredient> ingredients = new ArrayList<>();
-        for (Long id : ids) {
-            ingredients.add(findById(id));
+        for (String name : names){
+            ingredients.add(ingredientRepository.findByName(name)
+                    .orElseThrow(() -> new ElementNotFoundException("No ingredient with this name found!")));
         }
         return ingredients;
     }
 
-    public GetIngredientDTO createIngredient(PostIngredientDTO postIngredientDTO) throws ElementAlreadyExistsException {
+    public GetIngredientDTO createIngredient(PostIngredientDTO postIngredientDTO) {
         if (ingredientRepository.existsByName(postIngredientDTO.getName())) {
             throw new ElementAlreadyExistsException("There is an ingredient with this name!");
         }
@@ -59,17 +54,16 @@ public class IngredientService {
         return getIngredientDTO;
     }
 
-    @Transactional
-    public void deleteIngredient(Long id) throws ElementNotFoundException {
+    public void deleteIngredient(Long id) {
         ingredientRepository.delete(ingredientRepository.findById(id)
                 .orElseThrow(() -> new ElementNotFoundException("No ingredient with this ID found!")));
     }
 
-    public void updateIngredientPrice(Long id, GetIngredientDTO getIngredientDTO) throws ElementNotFoundException {
+    public GetIngredientDTO updateIngredientPrice(Long id, GetIngredientDTO getIngredientDTO) {
         Ingredient ingredient = ingredientRepository.findById(id).
                 orElseThrow(() -> new ElementNotFoundException("Not ingredient with this ID found!"));
         ingredient.setPrice(getIngredientDTO.getPrice());
-        ingredientRepository.save(ingredient);
+        return ingredientEntityToDTO(ingredientRepository.save(ingredient));
     }
 
 }

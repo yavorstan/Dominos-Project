@@ -5,11 +5,10 @@ import lombok.Getter;
 @Getter
 public enum PizzaSizeEnum {
 
-    //sample price addition for different sizes
-    SMALL(-1.5),
-    MEDIUM(0),
-    LARGE(3.6),
-    JUMBO(7.1);
+    SMALL(0.7),
+    MEDIUM(1),
+    LARGE(1.4),
+    JUMBO(1.9);
 
     private double additionalPrice;
 

@@ -26,7 +26,7 @@ public class PizzaOrderService {
     @Autowired
     private IngredientService ingredientService;
 
-    public GetPizzaOptionsDTO getOptions(Long id) throws ElementNotFoundException {
+    public GetPizzaOptionsDTO getOptions(Long id) {
         GetPizzaOptionsDTO getPizzaOptionsDTO = new GetPizzaOptionsDTO();
         Pizza pizza = pizzaService.findById(id);
         getPizzaOptionsDTO.setPizza(pizzaService.pizzaEntityToDTO(pizza));
@@ -36,31 +36,35 @@ public class PizzaOrderService {
         return getPizzaOptionsDTO;
     }
 
-    public GetPizzaOrderDTO addPizzaOrderToCart(Long pizzaId, PostPizzaOrderDTO postPizzaOrderDTO)
-            throws ElementNotFoundException {
+    public GetPizzaOrderDTO addPizzaOrderToCart(Long pizzaId, PostPizzaOrderDTO postPizzaOrderDTO) {
         //TODO add to cart
         PizzaOrder pizzaOrder = new PizzaOrder();
         pizzaOrder.setPizza(pizzaService.findById(pizzaId));
-        pizzaOrder.setSize(postPizzaOrderDTO.getPizzaSize() == null
-                ? PizzaSizeEnum.MEDIUM : postPizzaOrderDTO.getPizzaSize());
-        pizzaOrder.setCrust(postPizzaOrderDTO.getPizzaCrust() == null
-                ? PizzaCrustEnum.NORMAL : postPizzaOrderDTO.getPizzaCrust());
-        pizzaOrder.setAdditionalIngredients(ingredientService.ingredientIdToEntity(postPizzaOrderDTO.getAdditionalIngredientsIds()));
-        setFullPrice(pizzaOrder);
+        pizzaOrder.setSize(postPizzaOrderDTO.getSize() == null
+                ? PizzaSizeEnum.MEDIUM : postPizzaOrderDTO.getSize());
+        pizzaOrder.setCrust(postPizzaOrderDTO.getCrust() == null
+                ? PizzaCrustEnum.NORMAL : postPizzaOrderDTO.getCrust());
+        pizzaOrder.setAdditionalIngredients(ingredientService.findIngredientByName(postPizzaOrderDTO.getAdditionalIngredients()));
+        calculateFullPrice(pizzaOrder);
         return pizzaOrderEntityToDTO(pizzaOrderRepository.save(pizzaOrder));
     }
 
-    private void setFullPrice(PizzaOrder pizzaOrder) {
+    private void calculateFullPrice(PizzaOrder pizzaOrder) {
         double price = pizzaOrder.getPizza().getPrice();
-        price += pizzaOrder.getSize().getAdditionalPrice();
         price += pizzaOrder.getCrust().getAdditionalPrice();
-        for (Ingredient ingredient : pizzaOrder.getAdditionalIngredients()){
+        for (Ingredient ingredient : pizzaOrder.getAdditionalIngredients()) {
             price += ingredient.getPrice();
         }
+        price *= pizzaOrder.getSize().getAdditionalPrice();
         pizzaOrder.setFullPrice(price);
     }
 
-    private GetPizzaOrderDTO pizzaOrderEntityToDTO(PizzaOrder pizzaOrder){
+    public void deletePizzaOrder(Long id) {
+        pizzaOrderRepository.delete(pizzaOrderRepository.findById(id)
+                .orElseThrow(() -> new ElementNotFoundException("No pizza order with this id!")));
+    }
+
+    private GetPizzaOrderDTO pizzaOrderEntityToDTO(PizzaOrder pizzaOrder) {
         GetPizzaOrderDTO getPizzaOrderDTO = new GetPizzaOrderDTO();
         getPizzaOrderDTO.setId(pizzaOrder.getId());
         getPizzaOrderDTO.setOrder(pizzaOrder.getOrder());
@@ -68,7 +72,7 @@ public class PizzaOrderService {
         getPizzaOrderDTO.setPizza(pizzaOrder.getPizza());
         getPizzaOrderDTO.setSize(pizzaOrder.getSize());
         getPizzaOrderDTO.setCrust(pizzaOrder.getCrust());
-        for (Ingredient ingredient : pizzaOrder.getAdditionalIngredients()){
+        for (Ingredient ingredient : pizzaOrder.getAdditionalIngredients()) {
             getPizzaOrderDTO.getAdditionalIngredients().add(ingredientService.ingredientEntityToDTO(ingredient));
         }
         getPizzaOrderDTO.setFullPrice(pizzaOrder.getFullPrice());

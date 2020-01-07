@@ -22,29 +22,31 @@ public class IngredientController {
     @Autowired
     IngredientService ingredientService;
 
-    @RequestMapping(value = "", method = RequestMethod.POST)
-    public ResponseEntity<GetIngredientDTO> createIngredient(@Valid @RequestBody PostIngredientDTO postIngredientDTO, Errors errors)
-            throws ErrorCreatingEntityException, ElementAlreadyExistsException {
+    @PostMapping
+    public ResponseEntity<GetIngredientDTO> createIngredient(@Valid @RequestBody PostIngredientDTO postIngredientDTO,
+                                                             Errors errors) {
         if (errors.hasErrors()) {
-            throw new ErrorCreatingEntityException("Error");
+            throw new ErrorCreatingEntityException(errors.getFieldError().getDefaultMessage());
         }
-        GetIngredientDTO getIngredientDTO = ingredientService.createIngredient(postIngredientDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(getIngredientDTO);
+        GetIngredientDTO response = ingredientService.createIngredient(postIngredientDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @GetMapping("/list")
     public List<GetIngredientDTO> getIngredients() {
         return ingredientService.getIngredients();
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public void deleteIngredient(@PathVariable("id") Long id) throws ElementNotFoundException {
+    @DeleteMapping("/{id}")
+    public void deleteIngredient(@PathVariable("id") Long id) {
         ingredientService.deleteIngredient(id);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    public void updateIngredientPrice(@PathVariable("id") Long id, @RequestBody GetIngredientDTO getIngredientDTO) throws ElementNotFoundException {
-        ingredientService.updateIngredientPrice(id, getIngredientDTO);
+    @PutMapping("/{id}")
+    public ResponseEntity<GetIngredientDTO> updateIngredientPrice(@PathVariable("id") Long id,
+                                                                  @RequestBody GetIngredientDTO getIngredientDTO) {
+        GetIngredientDTO response = ingredientService.updateIngredientPrice(id, getIngredientDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
 }

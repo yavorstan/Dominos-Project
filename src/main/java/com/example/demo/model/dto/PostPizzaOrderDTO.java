@@ -10,8 +10,8 @@ import java.util.List;
 @Getter
 public class PostPizzaOrderDTO {
 
-    private PizzaSizeEnum pizzaSize;
-    private PizzaCrustEnum pizzaCrust;
-    private List<Long> additionalIngredientsIds;
+    private PizzaSizeEnum size;
+    private PizzaCrustEnum crust;
+    private List<String> additionalIngredients;
 
 }
