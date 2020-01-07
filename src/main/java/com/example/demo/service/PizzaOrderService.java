@@ -3,7 +3,6 @@ package com.example.demo.service;
 import com.example.demo.exceptions.ElementNotFoundException;
 import com.example.demo.model.dto.*;
 import com.example.demo.model.entity.Ingredient;
-import com.example.demo.model.entity.Pizza;
 import com.example.demo.model.entity.PizzaOrder;
 import com.example.demo.model.enumeration.PizzaCrustEnum;
 import com.example.demo.model.enumeration.PizzaSizeEnum;
@@ -12,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -27,13 +27,8 @@ public class PizzaOrderService {
     private IngredientService ingredientService;
 
     public GetPizzaOptionsDTO getOptions(Long id) {
-        GetPizzaOptionsDTO getPizzaOptionsDTO = new GetPizzaOptionsDTO();
-        Pizza pizza = pizzaService.findById(id);
-        getPizzaOptionsDTO.setPizza(pizzaService.pizzaEntityToDTO(pizza));
-        getPizzaOptionsDTO.setPizzaSizes(getPizzaSizeDTOS());
-        getPizzaOptionsDTO.setPizzaCrusts(getPizzaCrustDTOS());
-        getPizzaOptionsDTO.setAllIngredients(ingredientService.getIngredients());
-        return getPizzaOptionsDTO;
+        GetPizzaDTO getPizzaDTO = pizzaService.pizzaEntityToDTO(pizzaService.findById(id));
+        return new GetPizzaOptionsDTO(getPizzaDTO, getPizzaSizeDTOS(), getPizzaCrustDTOS(), ingredientService.getIngredients());
     }
 
     public GetPizzaOrderDTO addPizzaOrderToCart(Long pizzaId, PostPizzaOrderDTO postPizzaOrderDTO) {
@@ -44,19 +39,22 @@ public class PizzaOrderService {
                 ? PizzaSizeEnum.MEDIUM : postPizzaOrderDTO.getSize());
         pizzaOrder.setCrust(postPizzaOrderDTO.getCrust() == null
                 ? PizzaCrustEnum.NORMAL : postPizzaOrderDTO.getCrust());
-        pizzaOrder.setAdditionalIngredients(ingredientService.findIngredientByName(postPizzaOrderDTO.getAdditionalIngredients()));
-        calculateFullPrice(pizzaOrder);
+        List<Ingredient> additionalIngredientsToAdd = new ArrayList<>();
+        postPizzaOrderDTO.getAdditionalIngredients()
+                .forEach(s -> additionalIngredientsToAdd.add(ingredientService.findIngredientByName(s)));
+        pizzaOrder.setAdditionalIngredients(additionalIngredientsToAdd);
+        pizzaOrder.setFullPrice(calculateFullPrice(pizzaOrder));
         return pizzaOrderEntityToDTO(pizzaOrderRepository.save(pizzaOrder));
     }
 
-    private void calculateFullPrice(PizzaOrder pizzaOrder) {
+    private double calculateFullPrice(PizzaOrder pizzaOrder) {
         double price = pizzaOrder.getPizza().getPrice();
         price += pizzaOrder.getCrust().getAdditionalPrice();
         for (Ingredient ingredient : pizzaOrder.getAdditionalIngredients()) {
             price += ingredient.getPrice();
         }
         price *= pizzaOrder.getSize().getAdditionalPrice();
-        pizzaOrder.setFullPrice(price);
+        return price;
     }
 
     public void deletePizzaOrder(Long id) {
@@ -65,33 +63,29 @@ public class PizzaOrderService {
     }
 
     private GetPizzaOrderDTO pizzaOrderEntityToDTO(PizzaOrder pizzaOrder) {
-        GetPizzaOrderDTO getPizzaOrderDTO = new GetPizzaOrderDTO();
-        getPizzaOrderDTO.setId(pizzaOrder.getId());
-        getPizzaOrderDTO.setOrder(pizzaOrder.getOrder());
-        getPizzaOrderDTO.setCart(pizzaOrder.getCart());
-        getPizzaOrderDTO.setPizza(pizzaOrder.getPizza());
-        getPizzaOrderDTO.setSize(pizzaOrder.getSize());
-        getPizzaOrderDTO.setCrust(pizzaOrder.getCrust());
-        for (Ingredient ingredient : pizzaOrder.getAdditionalIngredients()) {
-            getPizzaOrderDTO.getAdditionalIngredients().add(ingredientService.ingredientEntityToDTO(ingredient));
-        }
-        getPizzaOrderDTO.setFullPrice(pizzaOrder.getFullPrice());
-        return getPizzaOrderDTO;
+        List<GetIngredientDTO> getIngredientDTOS = new ArrayList<>();
+        pizzaOrder.getAdditionalIngredients()
+                .stream()
+                .map(ingredient -> ingredientService.ingredientEntityToDTO(ingredient))
+                .forEach(getIngredientDTO -> getIngredientDTOS.add(getIngredientDTO));
+        return new GetPizzaOrderDTO(pizzaOrder.getId(), pizzaOrder.getOrder(),
+                pizzaOrder.getCart(), pizzaOrder.getPizza(), pizzaOrder.getSize(),
+                pizzaOrder.getCrust(), getIngredientDTOS, pizzaOrder.getFullPrice());
     }
 
     private List<GetPizzaCrustDTO> getPizzaCrustDTOS() {
         List<GetPizzaCrustDTO> getPizzaCrustDTOS = new ArrayList<>();
-        for (PizzaCrustEnum pizzaCrustEnum : PizzaCrustEnum.values()) {
-            getPizzaCrustDTOS.add(new GetPizzaCrustDTO(pizzaCrustEnum, pizzaCrustEnum.getAdditionalPrice()));
-        }
+        Arrays.stream(PizzaCrustEnum.values())
+                .map(pizzaCrustEnum -> new GetPizzaCrustDTO(pizzaCrustEnum, pizzaCrustEnum.getAdditionalPrice()))
+                .forEach(getPizzaCrustDTO -> getPizzaCrustDTOS.add(getPizzaCrustDTO));
         return getPizzaCrustDTOS;
     }
 
     private List<GetPizzaSizeDTO> getPizzaSizeDTOS() {
         List<GetPizzaSizeDTO> getPizzaSizeDTOS = new ArrayList<>();
-        for (PizzaSizeEnum pizzaSizeEnum : PizzaSizeEnum.values()) {
-            getPizzaSizeDTOS.add(new GetPizzaSizeDTO(pizzaSizeEnum, pizzaSizeEnum.getAdditionalPrice()));
-        }
+        Arrays.stream(PizzaSizeEnum.values())
+                .map(pizzaSizeEnum -> new GetPizzaSizeDTO(pizzaSizeEnum, pizzaSizeEnum.getAdditionalPrice()))
+                .forEach(getPizzaSizeDTO -> getPizzaSizeDTOS.add(getPizzaSizeDTO));
         return getPizzaSizeDTOS;
     }
 }

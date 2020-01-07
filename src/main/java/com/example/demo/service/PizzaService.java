@@ -2,15 +2,11 @@ package com.example.demo.service;
 
 import com.example.demo.exceptions.ElementAlreadyExistsException;
 import com.example.demo.exceptions.ElementNotFoundException;
-import com.example.demo.exceptions.ErrorCreatingEntityException;
 import com.example.demo.model.dto.GetIngredientDTO;
 import com.example.demo.model.dto.GetPizzaDTO;
 import com.example.demo.model.dto.PostPizzaDTO;
-import com.example.demo.model.entity.Ingredient;
 import com.example.demo.model.entity.Pizza;
-import com.example.demo.repository.IngredientRepository;
 import com.example.demo.repository.PizzaRepository;
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +21,7 @@ public class PizzaService {
     private PizzaRepository pizzaRepository;
 
     @Autowired
-    private IngredientRepository ingredientRepository;
+    private IngredientService ingredientService;
 
     public GetPizzaDTO createPizza(PostPizzaDTO postPizzaDTO) {
         if (pizzaRepository.existsByName(postPizzaDTO.getName())) {
@@ -34,33 +30,26 @@ public class PizzaService {
         Pizza pizza = new Pizza();
         pizza.setName(postPizzaDTO.getName());
         pizza.setPrice(postPizzaDTO.getPrice());
-        for (String s : postPizzaDTO.getIngredients()) {
-            Ingredient ingredient = ingredientRepository.findByName(s.toLowerCase())
-                    .orElseThrow(() -> new ElementNotFoundException("No ingredient '" + s + "' found!"));
-            pizza.getIngredients().add(ingredient);
-        }
+        postPizzaDTO
+                .getIngredients()
+                .stream()
+                .map(ingredient -> ingredientService.findIngredientByName(ingredient.toLowerCase()))
+                .forEach(ingredient -> pizza.getIngredients().add(ingredient));
         return pizzaEntityToDTO(pizzaRepository.save(pizza));
     }
 
     public List<GetPizzaDTO> getMenu() {
-        List<Pizza> pizzas = pizzaRepository.findAll();
         List<GetPizzaDTO> getPizzaResponse = new ArrayList<>();
-        for (Pizza pizza : pizzas) {
-            GetPizzaDTO getPizzaDTO = pizzaEntityToDTO(pizza);
-            getPizzaResponse.add(getPizzaDTO);
-        }
+        pizzaRepository.findAll()
+                .stream()
+                .map(pizza -> pizzaEntityToDTO(pizza))
+                .forEach(getPizzaDTO -> getPizzaResponse.add(getPizzaDTO));
         return Collections.unmodifiableList(getPizzaResponse);
     }
 
     public GetPizzaDTO updatePizzaPrice(Long id, GetPizzaDTO getPizzaDTO) {
         Pizza pizza = pizzaRepository.findById(id)
                 .orElseThrow(() -> new ElementNotFoundException("Pizza with this ID not found!"));
-        if (getPizzaDTO.getPrice() > 0) {
-            pizza.setPrice(getPizzaDTO.getPrice());
-        }
-        if (getPizzaDTO.getName() != null){
-            pizza.setName(getPizzaDTO.getName());
-        }
         return pizzaEntityToDTO(pizzaRepository.save(pizza));
     }
 
@@ -70,19 +59,12 @@ public class PizzaService {
     }
 
     public GetPizzaDTO pizzaEntityToDTO(Pizza pizza) {
-        GetPizzaDTO getPizzaDTO = new GetPizzaDTO();
-        getPizzaDTO.setId(pizza.getId());
-        getPizzaDTO.setName(pizza.getName());
-        getPizzaDTO.setPrice(pizza.getPrice());
-        List<GetIngredientDTO> list = new ArrayList<>();
-        getPizzaDTO.setIngredients(list);
-        for (Ingredient ingredient : pizza.getIngredients()) {
-            GetIngredientDTO getIngredientDTO = new GetIngredientDTO();
-            getIngredientDTO.setId(ingredient.getId());
-            getIngredientDTO.setName(ingredient.getName());
-            getIngredientDTO.setPrice(ingredient.getPrice());
-            getPizzaDTO.getIngredients().add(getIngredientDTO);
-        }
+        GetPizzaDTO getPizzaDTO = new GetPizzaDTO(pizza.getId(), pizza.getName(), pizza.getPrice());
+        getPizzaDTO.setIngredients(new ArrayList<>());
+        pizza.getIngredients()
+                .stream()
+                .map(ingredient -> new GetIngredientDTO(ingredient.getId(), ingredient.getName(), ingredient.getPrice()))
+                .forEach(getIngredientDTO -> getPizzaDTO.getIngredients().add(getIngredientDTO));
         return getPizzaDTO;
     }
 

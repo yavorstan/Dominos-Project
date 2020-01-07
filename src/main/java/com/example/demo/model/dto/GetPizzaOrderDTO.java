@@ -5,7 +5,9 @@ import com.example.demo.model.entity.Order;
 import com.example.demo.model.entity.Pizza;
 import com.example.demo.model.enumeration.PizzaCrustEnum;
 import com.example.demo.model.enumeration.PizzaSizeEnum;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
@@ -13,6 +15,8 @@ import java.util.List;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class GetPizzaOrderDTO {
 
     private long id;

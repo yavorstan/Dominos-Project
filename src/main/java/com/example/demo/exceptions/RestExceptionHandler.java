@@ -12,10 +12,16 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @EnableWebMvc
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(value = {ElementAlreadyExistsException.class, ErrorCreatingEntityException.class})
+    @ExceptionHandler(value = {ElementAlreadyExistsException.class})
     public ResponseEntity<Object> handleBadRequest(RuntimeException exception) {
         Error error = new Error(exception.getMessage());
         return new ResponseEntity<>(error.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {ErrorCreatingEntityException.class})
+    public ResponseEntity<Object> handleErrorCreatingEntityException(RuntimeException exception) {
+        Error error = new Error(exception.getMessage());
+        return new ResponseEntity<>(error.getMessage(), new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @ExceptionHandler(value = {ElementNotFoundException.class})

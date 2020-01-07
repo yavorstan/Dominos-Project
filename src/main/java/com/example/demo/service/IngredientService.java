@@ -19,13 +19,9 @@ public class IngredientService {
     @Autowired
     private IngredientRepository ingredientRepository;
 
-    public List<Ingredient> findIngredientByName(List<String> names){
-        List<Ingredient> ingredients = new ArrayList<>();
-        for (String name : names){
-            ingredients.add(ingredientRepository.findByName(name)
-                    .orElseThrow(() -> new ElementNotFoundException("No ingredient with this name found!")));
-        }
-        return ingredients;
+    public Ingredient findIngredientByName(String name) {
+        return ingredientRepository.findByName(name)
+                .orElseThrow(() -> new ElementNotFoundException("No ingredient with this name found!"));
     }
 
     public GetIngredientDTO createIngredient(PostIngredientDTO postIngredientDTO) {
@@ -40,18 +36,13 @@ public class IngredientService {
 
     public List<GetIngredientDTO> getIngredients() {
         ArrayList<GetIngredientDTO> ingredients = new ArrayList<>();
-        for (Ingredient ingredient : ingredientRepository.findAll()) {
-            ingredients.add(ingredientEntityToDTO(ingredient));
-        }
+        ingredientRepository.findAll()
+                .forEach(ingredient -> ingredients.add(ingredientEntityToDTO(ingredient)));
         return Collections.unmodifiableList(ingredients);
     }
 
     public GetIngredientDTO ingredientEntityToDTO(Ingredient ingredient) {
-        GetIngredientDTO getIngredientDTO = new GetIngredientDTO();
-        getIngredientDTO.setId(ingredient.getId());
-        getIngredientDTO.setName(ingredient.getName());
-        getIngredientDTO.setPrice(ingredient.getPrice());
-        return getIngredientDTO;
+        return new GetIngredientDTO(ingredient.getId(), ingredient.getName(), ingredient.getPrice());
     }
 
     public void deleteIngredient(Long id) {
