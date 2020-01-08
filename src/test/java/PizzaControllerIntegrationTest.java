@@ -1,0 +1,213 @@
+import com.example.demo.Application;
+import com.example.demo.controller.PizzaController;
+import com.example.demo.exceptions.RestExceptionHandler;
+import com.example.demo.model.dto.GetIngredientDTO;
+import com.example.demo.model.dto.GetPizzaDTO;
+import com.example.demo.model.dto.PostPizzaDTO;
+import com.example.demo.model.entity.Ingredient;
+import com.example.demo.model.entity.Pizza;
+import com.example.demo.repository.IngredientRepository;
+import com.example.demo.repository.PizzaRepository;
+import com.example.demo.service.PizzaService;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import util.TestUtil;
+
+import javax.persistence.EntityManager;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = Application.class)
+public class PizzaControllerIntegrationTest {
+
+    public static final String DEFAULT_PIZZA_NAME = "TestPizza";
+
+    public static final int DEFAULT_PIZZA_PRICE = 10;
+
+    public static final String DEFAULT_FIRST_INGREDIENT_NAME = "TestIngredient";
+
+    public static final double DEFAULT_INGREDIENT_PRICE = 2;
+
+    @Autowired
+    private PizzaRepository pizzaRepository;
+
+    @Autowired
+    private PizzaService pizzaService;
+
+    @Autowired
+    private IngredientRepository ingredientRepository;
+
+    @Autowired
+    private MappingJackson2HttpMessageConverter jacksonMessageConverter;
+
+    @Autowired
+    private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
+
+    @Autowired
+    private EntityManager em;
+
+    private MockMvc restPizzaMockMvc;
+
+    private PostPizzaDTO postPizzaDTO;
+
+    private Ingredient ingredient;
+
+    @Before
+    public void initTest() {
+        postPizzaDTO = createPostPizzaDTO(em);
+        ingredient = createIngredient(em);
+
+    }
+
+    @Before
+    public void setup() {
+        MockitoAnnotations.initMocks(this);
+        final PizzaController pizzaController = new PizzaController(pizzaService);
+        this.restPizzaMockMvc = MockMvcBuilders.standaloneSetup(pizzaController)
+                .setControllerAdvice(new RestExceptionHandler())
+                .setCustomArgumentResolvers(pageableArgumentResolver)
+                .setMessageConverters(jacksonMessageConverter).build();
+    }
+
+    public Pizza createPizzaEntity(EntityManager em) {
+        Pizza pizza = new Pizza();
+        pizza.setName(DEFAULT_PIZZA_NAME);
+        pizza.setPrice(DEFAULT_PIZZA_PRICE);
+
+        ArrayList<Ingredient> ingredients = new ArrayList<>();
+
+        ingredients.add(ingredient);
+
+        pizza.setIngredients(ingredients);
+        return pizza;
+    }
+
+    public static PostPizzaDTO createPostPizzaDTO(EntityManager em) {
+        PostPizzaDTO postPizzaDTO = new PostPizzaDTO();
+        postPizzaDTO.setName(DEFAULT_PIZZA_NAME);
+        postPizzaDTO.setPrice(DEFAULT_PIZZA_PRICE);
+
+        String ingredient = DEFAULT_FIRST_INGREDIENT_NAME;
+
+        ArrayList<String> ingredients = new ArrayList<>();
+        ingredients.add(ingredient);
+        postPizzaDTO.setIngredients(ingredients);
+        return postPizzaDTO;
+    }
+
+    public static GetPizzaDTO createGetPizzaDTO(EntityManager em) {
+        GetPizzaDTO getPizzaDTO = new GetPizzaDTO();
+        getPizzaDTO.setName(DEFAULT_PIZZA_NAME);
+        getPizzaDTO.setPrice(DEFAULT_PIZZA_PRICE);
+
+        GetIngredientDTO ingredient = createGetIngredientDTO(em);
+
+        ArrayList<GetIngredientDTO> ingredients = new ArrayList<>();
+        ingredients.add(ingredient);
+        getPizzaDTO.setIngredients(ingredients);
+        return getPizzaDTO;
+    }
+
+    public static GetIngredientDTO createGetIngredientDTO(EntityManager em) {
+        GetIngredientDTO getIngredientDTO = new GetIngredientDTO();
+        getIngredientDTO.setName(DEFAULT_FIRST_INGREDIENT_NAME);
+        getIngredientDTO.setPrice(DEFAULT_INGREDIENT_PRICE);
+
+        return getIngredientDTO;
+    }
+
+    private static Ingredient createIngredient(EntityManager em) {
+        Ingredient ingredient = new Ingredient();
+        ingredient.setName(DEFAULT_FIRST_INGREDIENT_NAME);
+        ingredient.setPrice(DEFAULT_INGREDIENT_PRICE);
+
+        return ingredient;
+    }
+
+    @Test
+    @Transactional
+    public void createPizza() throws Exception {
+        int databaseSizeBeforeCreate = pizzaRepository.findAll().size();
+
+        Ingredient ingredient = createIngredient(em);
+        ingredientRepository.saveAndFlush(ingredient);
+
+        restPizzaMockMvc.perform(post("/pizza")
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(TestUtil.convertObjectToJsonBytes(postPizzaDTO)))
+                .andExpect(status().isCreated());
+
+        List<Pizza> pizzaList = pizzaRepository.findAll();
+        assertThat(pizzaList).hasSize(databaseSizeBeforeCreate + 1);
+
+        Pizza testPizza = pizzaList.get(pizzaList.size() - 1);
+        assertThat(testPizza.getName()).isEqualTo(DEFAULT_PIZZA_NAME);
+        assertThat(testPizza.getPrice()).isEqualTo(DEFAULT_PIZZA_PRICE);
+        assertThat(testPizza.getIngredients().get(0).getName()).isEqualTo(DEFAULT_FIRST_INGREDIENT_NAME);
+    }
+
+
+    @Test
+    @Transactional
+    public void checkPizzaNameIsRequired() throws Exception {
+        int databaseSizeBeforeTest = pizzaRepository.findAll().size();
+
+        postPizzaDTO.setName(null);
+
+        restPizzaMockMvc.perform(post("/pizza")
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(TestUtil.convertObjectToJsonBytes(postPizzaDTO)))
+                .andExpect(status().isUnprocessableEntity());
+
+        List<Pizza> pizzaList = pizzaRepository.findAll();
+        assertThat(pizzaList).hasSize(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
+    public void checkPizzaPriceIsRequired() throws Exception {
+        int databaseSizeBeforeTest = pizzaRepository.findAll().size();
+
+        postPizzaDTO.setName(null);
+
+        restPizzaMockMvc.perform(post("/pizza")
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(TestUtil.convertObjectToJsonBytes(postPizzaDTO)))
+                .andExpect(status().isUnprocessableEntity());
+
+        List<Pizza> pizzaList = pizzaRepository.findAll();
+        assertThat(pizzaList).hasSize(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
+    public void checkPizzaIngredientsAreRequired() throws Exception {
+        int databaseSizeBeforeTest = pizzaRepository.findAll().size();
+
+        postPizzaDTO.setIngredients(null);
+
+        restPizzaMockMvc.perform(post("/pizza")
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(TestUtil.convertObjectToJsonBytes(postPizzaDTO)))
+                .andExpect(status().isUnprocessableEntity());
+
+        List<Pizza> pizzaList = pizzaRepository.findAll();
+        assertThat(pizzaList).hasSize(databaseSizeBeforeTest);
+    }
+}

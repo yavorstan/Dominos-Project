@@ -10,9 +10,9 @@ public enum PizzaSizeEnum {
     LARGE(1.4),
     JUMBO(1.9);
 
-    private double additionalPrice;
+    private double additionalPriceMultiplier;
 
-    PizzaSizeEnum(double additionalPrice) {
-        this.additionalPrice = additionalPrice;
+    PizzaSizeEnum(double additionalPriceMultiplier) {
+        this.additionalPriceMultiplier = this.additionalPriceMultiplier;
     }
 }

@@ -5,7 +5,6 @@ import com.example.demo.exceptions.ErrorCreatingEntityException;
 import com.example.demo.model.dto.GetPizzaDTO;
 import com.example.demo.model.dto.PostPizzaDTO;
 import com.example.demo.service.PizzaService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -18,8 +17,11 @@ import java.util.List;
 @RequestMapping("/pizza")
 public class PizzaController {
 
-    @Autowired
-    private PizzaService pizzaService;
+    private final PizzaService pizzaService;
+
+    public PizzaController(PizzaService pizzaService) {
+        this.pizzaService = pizzaService;
+    }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ResponseEntity<GetPizzaDTO> createPizza(@Valid @RequestBody PostPizzaDTO postPizzaDTO, Errors errors){

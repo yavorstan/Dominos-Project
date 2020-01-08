@@ -53,7 +53,7 @@ public class PizzaOrderService {
         for (Ingredient ingredient : pizzaOrder.getAdditionalIngredients()) {
             price += ingredient.getPrice();
         }
-        price *= pizzaOrder.getSize().getAdditionalPrice();
+        price *= pizzaOrder.getSize().getAdditionalPriceMultiplier();
         return price;
     }
 
@@ -84,7 +84,7 @@ public class PizzaOrderService {
     private List<GetPizzaSizeDTO> getPizzaSizeDTOS() {
         List<GetPizzaSizeDTO> getPizzaSizeDTOS = new ArrayList<>();
         Arrays.stream(PizzaSizeEnum.values())
-                .map(pizzaSizeEnum -> new GetPizzaSizeDTO(pizzaSizeEnum, pizzaSizeEnum.getAdditionalPrice()))
+                .map(pizzaSizeEnum -> new GetPizzaSizeDTO(pizzaSizeEnum, pizzaSizeEnum.getAdditionalPriceMultiplier()))
                 .forEach(getPizzaSizeDTO -> getPizzaSizeDTOS.add(getPizzaSizeDTO));
         return getPizzaSizeDTOS;
     }
