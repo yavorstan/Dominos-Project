@@ -1,12 +1,9 @@
 package com.example.demo.controller;
 
-import com.example.demo.exceptions.ElementAlreadyExistsException;
-import com.example.demo.exceptions.ElementNotFoundException;
 import com.example.demo.exceptions.ErrorCreatingEntityException;
 import com.example.demo.model.dto.GetIngredientDTO;
 import com.example.demo.model.dto.PostIngredientDTO;
 import com.example.demo.service.IngredientService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -19,8 +16,11 @@ import java.util.List;
 @RequestMapping("/ingredients")
 public class IngredientController {
 
-    @Autowired
-    IngredientService ingredientService;
+    private final IngredientService ingredientService;
+
+    public IngredientController(IngredientService ingredientService) {
+        this.ingredientService = ingredientService;
+    }
 
     @PostMapping
     public ResponseEntity<GetIngredientDTO> createIngredient(@Valid @RequestBody PostIngredientDTO postIngredientDTO,

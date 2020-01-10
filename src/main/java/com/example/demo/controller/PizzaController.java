@@ -23,28 +23,28 @@ public class PizzaController {
         this.pizzaService = pizzaService;
     }
 
-    @RequestMapping(value = "", method = RequestMethod.POST)
-    public ResponseEntity<GetPizzaDTO> createPizza(@Valid @RequestBody PostPizzaDTO postPizzaDTO, Errors errors){
-        if(errors.hasErrors()){
+    @PostMapping
+    public ResponseEntity<GetPizzaDTO> createPizza(@Valid @RequestBody PostPizzaDTO postPizzaDTO, Errors errors) {
+        if (errors.hasErrors()) {
             throw new ErrorCreatingEntityException(errors.getFieldError().getDefaultMessage());
         }
         GetPizzaDTO getPizzaDTO = pizzaService.createPizza(postPizzaDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(getPizzaDTO);
     }
 
-    @RequestMapping(value = "/menu", method = RequestMethod.GET)
+    @GetMapping("/menu")
     public List<GetPizzaDTO> getMenu() {
         return pizzaService.getMenu();
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping("/{id}")
     public ResponseEntity<GetPizzaDTO> updatePizzaPrice(@PathVariable("id") Long id, @RequestBody GetPizzaDTO getPizzaDTO)
             throws ElementNotFoundException, IllegalArgumentException {
         GetPizzaDTO response = pizzaService.updatePizzaPrice(id, getPizzaDTO);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping("/{id}")
     public void deletePizzaById(@PathVariable("id") Long id) {
         pizzaService.deletePizzaById(id);
     }

@@ -2,17 +2,19 @@ package com.example.demo.model.enumeration;
 
 import lombok.Getter;
 
+import java.math.BigDecimal;
+
 @Getter
 public enum PizzaSizeEnum {
 
-    SMALL(0.7),
-    MEDIUM(1),
-    LARGE(1.4),
-    JUMBO(1.9);
+    SMALL(new BigDecimal(0.7)),
+    MEDIUM(new BigDecimal(1)),
+    LARGE(new BigDecimal(1.4)),
+    JUMBO(new BigDecimal(1.9));
 
-    private double additionalPriceMultiplier;
+    private BigDecimal additionalPriceMultiplier;
 
-    PizzaSizeEnum(double additionalPriceMultiplier) {
-        this.additionalPriceMultiplier = this.additionalPriceMultiplier;
+    PizzaSizeEnum(BigDecimal additionalPriceMultiplier) {
+        this.additionalPriceMultiplier = additionalPriceMultiplier;
     }
 }

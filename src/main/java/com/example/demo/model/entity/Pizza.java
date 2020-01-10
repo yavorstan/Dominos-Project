@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class Pizza {
 
     private String name;
 
-    private double price;
+    private BigDecimal price;
 
     @ManyToMany
     private List<Ingredient> ingredients = new ArrayList<>();

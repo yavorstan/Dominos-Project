@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -37,6 +38,6 @@ public class PizzaOrder {
     @ManyToMany
     private List<Ingredient> additionalIngredients;
 
-    private double fullPrice;
+    private BigDecimal fullPrice;
 
 }

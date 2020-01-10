@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +26,6 @@ public class Cart {
             orphanRemoval = true)
     private List<PizzaOrder> pizzaOrders = new ArrayList<>();
 
-    private double fullPrice;
+    private BigDecimal fullPrice;
 
 }

@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,6 @@ public class GetPizzaOrderDTO {
     private PizzaSizeEnum size;
     private PizzaCrustEnum crust;
     private List<GetIngredientDTO> additionalIngredients = new ArrayList<>();
-    private double fullPrice;
+    private BigDecimal fullPrice;
 
 }

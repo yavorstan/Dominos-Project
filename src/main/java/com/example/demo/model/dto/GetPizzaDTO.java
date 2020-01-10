@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Setter
@@ -15,10 +16,10 @@ public class GetPizzaDTO {
 
     private long id;
     private String name;
-    private double price;
+    private BigDecimal price;
     private List<GetIngredientDTO> ingredients;
 
-    public GetPizzaDTO(long id, String name, double price) {
+    public GetPizzaDTO(long id, String name, BigDecimal price) {
         this.id = id;
         this.name = name;
         this.price = price;

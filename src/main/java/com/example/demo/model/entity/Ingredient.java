@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -19,5 +20,5 @@ public class Ingredient {
 
     private String name;
 
-    private double price;
+    private BigDecimal price;
 }

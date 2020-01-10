@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import util.TestUtil;
 
 import javax.persistence.EntityManager;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,11 +39,11 @@ public class PizzaControllerIntegrationTest {
 
     public static final String DEFAULT_PIZZA_NAME = "TestPizza";
 
-    public static final int DEFAULT_PIZZA_PRICE = 10;
+    public static final BigDecimal DEFAULT_PIZZA_PRICE = new BigDecimal(12);
 
     public static final String DEFAULT_FIRST_INGREDIENT_NAME = "TestIngredient";
 
-    public static final double DEFAULT_INGREDIENT_PRICE = 2;
+    public static final BigDecimal DEFAULT_INGREDIENT_PRICE = new BigDecimal(2);
 
     @Autowired
     private PizzaRepository pizzaRepository;
@@ -184,7 +185,7 @@ public class PizzaControllerIntegrationTest {
     public void checkPizzaPriceIsRequired() throws Exception {
         int databaseSizeBeforeTest = pizzaRepository.findAll().size();
 
-        postPizzaDTO.setName(null);
+        postPizzaDTO.setPrice(null);
 
         restPizzaMockMvc.perform(post("/pizza")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)

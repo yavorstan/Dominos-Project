@@ -10,6 +10,7 @@ import com.example.demo.repository.PizzaOrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -47,14 +48,13 @@ public class PizzaOrderService {
         return pizzaOrderEntityToDTO(pizzaOrderRepository.save(pizzaOrder));
     }
 
-    private double calculateFullPrice(PizzaOrder pizzaOrder) {
-        double price = pizzaOrder.getPizza().getPrice();
-        price += pizzaOrder.getCrust().getAdditionalPrice();
+    private BigDecimal calculateFullPrice(PizzaOrder pizzaOrder) {
+        BigDecimal price = pizzaOrder.getPizza().getPrice();
+        price.add(pizzaOrder.getCrust().getAdditionalPrice());
         for (Ingredient ingredient : pizzaOrder.getAdditionalIngredients()) {
-            price += ingredient.getPrice();
+            price.add(ingredient.getPrice());
         }
-        price *= pizzaOrder.getSize().getAdditionalPriceMultiplier();
-        return price;
+        return price.multiply(pizzaOrder.getSize().getAdditionalPriceMultiplier());
     }
 
     public void deletePizzaOrder(Long id) {

@@ -3,9 +3,10 @@ package com.example.demo.model.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -17,8 +18,8 @@ public class PostPizzaDTO {
     @NotBlank(message = "Name is mandatory!")
     private String name;
 
-    @Min(MIN_PRICE_FOR_PIZZA)
-    private double price;
+    @NotNull(message = "Price is mandatory!")
+    private BigDecimal price;
 
     @NotEmpty(message = "Pizza must have some ingredients!")
     private List<@NotBlank String> ingredients;

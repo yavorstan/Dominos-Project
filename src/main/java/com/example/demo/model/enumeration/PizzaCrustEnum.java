@@ -2,17 +2,19 @@ package com.example.demo.model.enumeration;
 
 import lombok.Getter;
 
+import java.math.BigDecimal;
+
 @Getter
 public enum PizzaCrustEnum {
 
     //sample
-    NORMAL(0),
-    ITALIAN(1.3),
-    PHILADELPHIA(2.3);
+    NORMAL(new BigDecimal(0)),
+    ITALIAN(new BigDecimal(1.3)),
+    PHILADELPHIA(new BigDecimal(2.3));
 
-    private double additionalPrice;
+    private BigDecimal additionalPrice;
 
-    PizzaCrustEnum(double additionalPrice){
+    PizzaCrustEnum(BigDecimal additionalPrice){
         this.additionalPrice = additionalPrice;
     }
 }
