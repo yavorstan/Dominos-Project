@@ -1,4 +1,4 @@
 package com.example.demo.model.dto;
 
-public class PostLoginUserDto {
+public class PostLoginUserDto extends AbstractUserDto {
 }

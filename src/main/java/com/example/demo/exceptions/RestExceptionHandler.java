@@ -12,6 +12,12 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @EnableWebMvc
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @ExceptionHandler(value = {CredentialsException.class})
+    public ResponseEntity<Object> handleBadCredentials(RuntimeException exception){
+        Error error = new Error(exception.getMessage());
+        return new ResponseEntity<>(error.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(value = {ElementAlreadyExistsException.class})
     public ResponseEntity<Object> handleBadRequest(RuntimeException exception) {
         Error error = new Error(exception.getMessage());
