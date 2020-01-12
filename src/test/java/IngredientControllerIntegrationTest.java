@@ -1,5 +1,3 @@
-package util;
-
 import com.example.demo.Application;
 import com.example.demo.controller.IngredientController;
 import com.example.demo.exceptions.RestExceptionHandler;
@@ -16,16 +14,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import util.TestUtil;
 
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -59,10 +61,19 @@ public class IngredientControllerIntegrationTest {
 
     private Ingredient ingredient;
 
+    private MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
+
+    private MockHttpSession session;
+
     @Before
     public void initTest() {
         postIngredientDTO = createPostIngredientDTO(em);
         ingredient = createIngredientEntity(em);
+
+        mockHttpServletRequest.setSession(session);
+        session = new MockHttpSession();
+        session.setAttribute("email", "testMail");
+        session.setAttribute("isAdmin", true);
     }
 
     @Before
@@ -73,6 +84,8 @@ public class IngredientControllerIntegrationTest {
                 .setControllerAdvice(new RestExceptionHandler())
                 .setCustomArgumentResolvers(pageableArgumentResolver)
                 .setMessageConverters(jacksonMessageConverter).build();
+
+
     }
 
     public Ingredient createIngredientEntity(EntityManager em) {
@@ -102,6 +115,7 @@ public class IngredientControllerIntegrationTest {
         int databaseSizeBeforeCreate = ingredientRepository.findAll().size();
 
         restIngredientMockMvc.perform(post("/ingredients")
+                .session(session)
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(postIngredientDTO)))
                 .andExpect(status().isCreated());
@@ -142,6 +156,21 @@ public class IngredientControllerIntegrationTest {
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(postIngredientDTO)))
                 .andExpect(status().isUnprocessableEntity());
+
+        List<Ingredient> ingredientList = ingredientRepository.findAll();
+        assertThat(ingredientList).hasSize(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
+    public void deleteIngredient() throws Exception {
+        int databaseSizeBeforeTest = ingredientRepository.findAll().size();
+        ingredientRepository.save(ingredient);
+
+        restIngredientMockMvc.perform(delete("/ingredients/{id}", ingredient.getId())
+                .session(session)
+                .accept(TestUtil.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk());
 
         List<Ingredient> ingredientList = ingredientRepository.findAll();
         assertThat(ingredientList).hasSize(databaseSizeBeforeTest);

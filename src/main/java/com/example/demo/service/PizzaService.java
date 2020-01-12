@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.exceptions.ElementAlreadyExistsException;
 import com.example.demo.exceptions.ElementNotFoundException;
+import com.example.demo.exceptions.UnauthorizedAccessException;
 import com.example.demo.model.dto.GetIngredientDTO;
 import com.example.demo.model.dto.GetPizzaDTO;
 import com.example.demo.model.dto.PostPizzaDTO;
@@ -10,6 +11,7 @@ import com.example.demo.repository.PizzaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +25,11 @@ public class PizzaService {
     @Autowired
     private IngredientService ingredientService;
 
-    public GetPizzaDTO createPizza(PostPizzaDTO postPizzaDTO) {
+    @Autowired
+    private UserService userService;
+
+    public GetPizzaDTO createPizza(HttpSession session, PostPizzaDTO postPizzaDTO) {
+        userService.checkIfAdmin(session);
         if (pizzaRepository.existsByName(postPizzaDTO.getName())) {
             throw new ElementAlreadyExistsException("Pizza with this name already exists!");
         }
@@ -47,13 +53,15 @@ public class PizzaService {
         return Collections.unmodifiableList(getPizzaResponse);
     }
 
-    public GetPizzaDTO updatePizzaPrice(Long id, GetPizzaDTO getPizzaDTO) {
+    public GetPizzaDTO updatePizzaPrice(HttpSession session, Long id, GetPizzaDTO getPizzaDTO) {
+        userService.checkIfAdmin(session);
         Pizza pizza = pizzaRepository.findById(id)
                 .orElseThrow(() -> new ElementNotFoundException("Pizza with this ID not found!"));
         return pizzaEntityToDTO(pizzaRepository.save(pizza));
     }
 
-    public void deletePizzaById(Long id) {
+    public void deletePizzaById(HttpSession session, Long id) {
+        userService.checkIfAdmin(session);
         pizzaRepository.delete(pizzaRepository.findById(id)
                 .orElseThrow(() -> new ElementNotFoundException("Pizza with this ID not found!")));
     }

@@ -1,42 +1,39 @@
 package com.example.demo.model.entity;
 
-import com.example.demo.model.dto.PostUserRegistrationFormDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
 @Setter
+@Table(name = "users", indexes = @Index(columnList = "email", name = "email", unique = true))
 @NoArgsConstructor
 public class User {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    @GeneratedValue
+    private Long id;
 
-    @NotBlank
-    private String email;
+    private boolean isAdmin;
 
-    @NotBlank
     private String firstName;
 
-    @NotBlank
     private String lastName;
 
-    @NotBlank
+    private String email;
+
     private String password;
 
-    public User(PostUserRegistrationFormDto userDto) {
-        setEmail(userDto.getEmail());
-        setFirstName(userDto.getFirstName());
-        setLastName(userDto.getLastName());
-        setPassword(userDto.getPassword());
-    }
+//    @OneToMany(
+//            mappedBy = "user",
+//            cascade = CascadeType.ALL,
+//            orphanRemoval = true)
+//    private List<Address> addresses;
 
     @OneToMany(
             mappedBy = "user",
@@ -44,4 +41,10 @@ public class User {
             orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
 
+    public User(String firstName, String lastName, String email, String password) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+    }
 }

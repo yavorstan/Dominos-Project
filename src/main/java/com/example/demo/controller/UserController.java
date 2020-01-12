@@ -1,39 +1,49 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.dto.AbstractUserDto;
-import com.example.demo.model.dto.PostLoginUserDto;
-import com.example.demo.model.dto.PostUserRegistrationFormDto;
-import com.example.demo.model.entity.User;
+import com.example.demo.exceptions.ErrorCreatingEntityException;
+import com.example.demo.model.dto.GetUserDTO;
+import com.example.demo.model.dto.LoginUserDTO;
+import com.example.demo.model.dto.RegisterUserDTO;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
+
     @Autowired
     private UserService userService;
 
     @PostMapping("/register")
-    public void register(HttpSession session, @RequestBody PostUserRegistrationFormDto userDto){
-        userService.addUser(userDto);
-        SessionManager.logUser(session, userDto);
+    public ResponseEntity<GetUserDTO> registerUser(HttpSession session,
+                                                   @Valid @RequestBody RegisterUserDTO registerUserDTO,
+                                                   Errors errors) {
+        if (errors.hasErrors()) {
+            throw new ErrorCreatingEntityException(errors.getFieldError().getDefaultMessage());
+        }
+        GetUserDTO getUserDTO = userService.register(session, registerUserDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(getUserDTO);
     }
 
     @PostMapping("/login")
-    public void login(HttpSession session, @RequestBody PostLoginUserDto userDto){
-        userService.logUser(userDto);
-        SessionManager.logUser(session,userDto);
+    public ResponseEntity<GetUserDTO> loginUser(HttpSession session, @RequestBody LoginUserDTO loginUserDTO) {
+        GetUserDTO getUserDTO = userService.loginUser(session, loginUserDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(getUserDTO);
     }
 
     @PostMapping("/logout")
-    public void logout(HttpSession session){
-        session.invalidate();
+    public void logoutUser(HttpSession session) {
+        userService.logoutUser(session);
     }
 
 }

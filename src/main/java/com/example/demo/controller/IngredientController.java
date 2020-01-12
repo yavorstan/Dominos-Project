@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -23,12 +24,13 @@ public class IngredientController {
     }
 
     @PostMapping
-    public ResponseEntity<GetIngredientDTO> createIngredient(@Valid @RequestBody PostIngredientDTO postIngredientDTO,
+    public ResponseEntity<GetIngredientDTO> createIngredient(HttpSession session,
+                                                             @Valid @RequestBody PostIngredientDTO postIngredientDTO,
                                                              Errors errors) {
         if (errors.hasErrors()) {
             throw new ErrorCreatingEntityException(errors.getFieldError().getDefaultMessage());
         }
-        GetIngredientDTO response = ingredientService.createIngredient(postIngredientDTO);
+        GetIngredientDTO response = ingredientService.createIngredient(session, postIngredientDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -38,14 +40,15 @@ public class IngredientController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteIngredient(@PathVariable("id") Long id) {
-        ingredientService.deleteIngredient(id);
+    public void deleteIngredient(HttpSession session, @PathVariable("id") Long id) {
+        ingredientService.deleteIngredient(session, id);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GetIngredientDTO> updateIngredientPrice(@PathVariable("id") Long id,
-                                                                  @RequestBody GetIngredientDTO getIngredientDTO) {
-        GetIngredientDTO response = ingredientService.updateIngredientPrice(id, getIngredientDTO);
+    public ResponseEntity<GetIngredientDTO> updateIngredientPrice(HttpSession session,
+                                                                  @PathVariable("id") Long id,
+                                                                  @RequestBody PostIngredientDTO postIngredientDTO) {
+        GetIngredientDTO response = ingredientService.updateIngredientPrice(session, id, postIngredientDTO);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

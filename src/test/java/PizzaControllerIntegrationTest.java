@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -29,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -69,11 +72,23 @@ public class PizzaControllerIntegrationTest {
 
     private Ingredient ingredient;
 
+    private Pizza pizza;
+
+    private MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
+
+    private MockHttpSession session;
+
+
     @Before
     public void initTest() {
         postPizzaDTO = createPostPizzaDTO(em);
         ingredient = createIngredient(em);
+        pizza = createPizzaEntity(em);
 
+        mockHttpServletRequest.setSession(session);
+        session = new MockHttpSession();
+        session.setAttribute("email", "testMail");
+        session.setAttribute("isAdmin", true);
     }
 
     @Before
@@ -150,6 +165,7 @@ public class PizzaControllerIntegrationTest {
         ingredientRepository.saveAndFlush(ingredient);
 
         restPizzaMockMvc.perform(post("/pizza")
+                .session(session)
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(postPizzaDTO)))
                 .andExpect(status().isCreated());
@@ -207,6 +223,21 @@ public class PizzaControllerIntegrationTest {
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(postPizzaDTO)))
                 .andExpect(status().isUnprocessableEntity());
+
+        List<Pizza> pizzaList = pizzaRepository.findAll();
+        assertThat(pizzaList).hasSize(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
+    public void deletePizza() throws Exception {
+        int databaseSizeBeforeTest = pizzaRepository.findAll().size();
+        pizzaRepository.save(pizza);
+
+        restPizzaMockMvc.perform(delete("/pizza/{id}", pizza.getId())
+                .session(session)
+                .accept(TestUtil.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk());
 
         List<Pizza> pizzaList = pizzaRepository.findAll();
         assertThat(pizzaList).hasSize(databaseSizeBeforeTest);

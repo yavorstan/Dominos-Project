@@ -1,53 +1,92 @@
 package com.example.demo.service;
 
-import com.example.demo.controller.SessionManager;
-import com.example.demo.exceptions.CredentialsException;
-import com.example.demo.exceptions.UnauthorizedException;
-import com.example.demo.model.dto.PostLoginUserDto;
-import com.example.demo.model.dto.PostUserRegistrationFormDto;
+import com.example.demo.exceptions.ElementAlreadyExistsException;
+import com.example.demo.exceptions.ElementNotFoundException;
+import com.example.demo.exceptions.ErrorCreatingEntityException;
+import com.example.demo.exceptions.UnauthorizedAccessException;
+import com.example.demo.model.dto.GetUserDTO;
+import com.example.demo.model.dto.LoginUserDTO;
+import com.example.demo.model.dto.RegisterUserDTO;
 import com.example.demo.model.entity.User;
 import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpSession;
 
 @Service
 public class UserService {
-    public static final String PASSWORDS_MISMATCH_MESSAGE = "The passwords do not match. Please try again!";
-    public static final String EMAILS_MISMATCH_MESSAGE = "The emails do not match. Please try again!";
+
     @Autowired
     private UserRepository userRepository;
 
-    public long addUser(PostUserRegistrationFormDto userDto) {
-        if (!userDto.getPassword().equals(userDto.getConfirmationPassword())) {
-            throw new CredentialsException(PASSWORDS_MISMATCH_MESSAGE);
+    public GetUserDTO register(HttpSession session, RegisterUserDTO registerUserDTO) {
+        if (isLoggedIn(session)) {
+            throw new UnauthorizedAccessException("You are already logged in!");
         }
-        if (!userDto.getEmail().equals(userDto.getConfirmationEmail())) {
-            throw new CredentialsException(EMAILS_MISMATCH_MESSAGE);
+        if (userRepository.existsByEmail(registerUserDTO.getEmail())) {
+            throw new ElementAlreadyExistsException("There is another user with this email address!");
         }
-        if (userRepository.findByEmail(userDto.getEmail()) != null) {
-            throw new CredentialsException("User with that email already exist. " +
-                    "If you have access to the following email" +
-                    ", you can request a new password, " +
-                    "otherwise please enter other email address!");
+        if (!registerUserDTO.getPassword().equals(registerUserDTO.getRepeatPassword())) {
+            throw new ErrorCreatingEntityException("Passwords do not match!");
         }
-        User user = new User();
-        user.setFirstName(userDto.getFirstName());
-        user.setLastName(userDto.getLastName());
-        user.setEmail(userDto.getEmail());
-        user.setPassword(userDto.getPassword());//TODO encrypt
-        return userRepository.save(user).getId();
+        User user = new User(
+                registerUserDTO.getFirstName(),
+                registerUserDTO.getLastName(),
+                registerUserDTO.getEmail(),
+                passwordEncoder().encode(registerUserDTO.getPassword()));
+
+        userRepository.save(user);
+        setSessionAttributes(session, user);
+        return userEntityToDTO(user);
     }
 
-    public void logUser(PostLoginUserDto userDto) {
-        User user = userRepository.findByEmail(userDto.getEmail());
-        if (user == null) {
-            throw new UnauthorizedException("User with such email does not exist. " +
-                    "Please check your credentials!");
+    public GetUserDTO loginUser(HttpSession session, LoginUserDTO loginUserDTO) {
+        if (isLoggedIn(session)) {
+            throw new ElementNotFoundException("Already logged in!");
         }
-        if(!user.getPassword().equals(userDto.getPassword())){
-            throw new UnauthorizedException("Invalid combination of email and password. " +
-                    "Please check your credentials!");
+        User user = userRepository.findByEmail(loginUserDTO.getEmail())
+                .orElseThrow(() -> new ElementNotFoundException("Invalid email and/or password!"));
+        if (passwordEncoder().matches(loginUserDTO.getPassword(), user.getPassword())) {
+            setSessionAttributes(session, user);
+            return userEntityToDTO(user);
+        } else throw new ElementNotFoundException("Invalid email and/or password!");
+    }
+
+    public void logoutUser(HttpSession session) {
+        if (!isLoggedIn(session)) {
+            throw new UnauthorizedAccessException("You are not logged in!");
         }
-        userRepository.save(user);
+        session.invalidate();
+    }
+
+    public boolean isLoggedIn(HttpSession session) {
+        if (session.getAttribute("email") == null) {
+            return false;
+        }
+        return true;
+    }
+
+    public void checkIfAdmin(HttpSession session) {
+        if (!isLoggedIn(session)) {
+            throw new UnauthorizedAccessException("You are not logged in!");
+        }
+        if (session.getAttribute("isAdmin").equals(false)) {
+            throw new UnauthorizedAccessException("You have no administration rights!");
+        }
+    }
+
+    public GetUserDTO userEntityToDTO(User user) {
+        return new GetUserDTO(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail());
+    }
+
+    private void setSessionAttributes(HttpSession session, User user) {
+        session.setAttribute("email", user.getEmail());
+        session.setAttribute("isAdmin", user.isAdmin());
+    }
+
+    private BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

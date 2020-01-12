@@ -24,19 +24,19 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = {ErrorCreatingEntityException.class})
     public ResponseEntity<Object> handleErrorCreatingEntityException(RuntimeException exception) {
         CustomError error = new CustomError(exception.getClass().getSimpleName(), exception.getMessage(), LocalDateTime.now(), HttpStatus.UNPROCESSABLE_ENTITY.value());
-        return new ResponseEntity<>(error.getMessage(), new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY);
+        return new ResponseEntity<>(error, new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @ExceptionHandler(value = {ElementNotFoundException.class})
     public ResponseEntity<Object> handleElementNotFoundException(RuntimeException exception) {
         CustomError error = new CustomError(exception.getClass().getSimpleName(), exception.getMessage(), LocalDateTime.now(), HttpStatus.NOT_FOUND.value());
-        return new ResponseEntity<>(error.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(error, new HttpHeaders(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(value = {UnauthorizedAccessException.class})
     public ResponseEntity<Object> handleUnauthorizedAccessException(RuntimeException exception) {
         CustomError error = new CustomError(exception.getClass().getSimpleName(), exception.getMessage(), LocalDateTime.now(), HttpStatus.UNAUTHORIZED.value());
-        return new ResponseEntity<>(error.getMessage(), new HttpHeaders(), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(error, new HttpHeaders(), HttpStatus.UNAUTHORIZED);
     }
 
 }
