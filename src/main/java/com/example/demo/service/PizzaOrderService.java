@@ -73,11 +73,14 @@ public class PizzaOrderService {
         return price.multiply(new BigDecimal(pizzaOrder.getQuantity()));
     }
 
-    public List<GetPizzaOrderDTO> viewPizzaOrders(HttpSession session){
+    public List<GetPizzaOrderDTO> viewPizzaOrders(HttpSession session) {
         userService.checkIfLoggedIn(session);
         List<GetPizzaOrderDTO> getPizzaOrderDTOList = new ArrayList<>();
+        if (session.getAttribute("cart") == null) {
+            throw new ElementNotFoundException("No cart found!");
+        }
         HashMap<Long, Integer> cart = (HashMap<Long, Integer>) session.getAttribute("cart");
-        for (Long id : cart.keySet()){
+        for (Long id : cart.keySet()) {
             getPizzaOrderDTOList.add(pizzaOrderEntityToDTO(pizzaOrderRepository.findById(id)
                     .orElseThrow(() -> new ElementNotFoundException("No such pizza order!"))));
         }
@@ -108,7 +111,7 @@ public class PizzaOrderService {
                 .map(ingredient -> ingredientService.ingredientEntityToDTO(ingredient))
                 .forEach(getIngredientDTO -> getIngredientDTOS.add(getIngredientDTO));
         return new GetPizzaOrderDTO(pizzaOrder.getId(), pizzaOrder.getOrder(), pizzaOrder.getPizza(), pizzaOrder.getSize(),
-                pizzaOrder.getCrust(), getIngredientDTOS,pizzaOrder.getQuantity(), pizzaOrder.getFullPrice());
+                pizzaOrder.getCrust(), getIngredientDTOS, pizzaOrder.getQuantity(), pizzaOrder.getFullPrice());
     }
 
     private List<GetPizzaCrustDTO> getPizzaCrustDTOS() {
