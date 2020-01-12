@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpSession;
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.*;
 
 @Service
@@ -65,12 +67,12 @@ public class PizzaOrderService {
 
     private BigDecimal calculateFullPrice(PizzaOrder pizzaOrder) {
         BigDecimal price = pizzaOrder.getPizza().getPrice();
-        price.add(pizzaOrder.getCrust().getAdditionalPrice());
+        price = price.add(pizzaOrder.getCrust().getAdditionalPrice());
         for (Ingredient ingredient : pizzaOrder.getAdditionalIngredients()) {
-            price.add(ingredient.getPrice());
+            price = price.add(ingredient.getPrice());
         }
-        price.multiply(pizzaOrder.getSize().getAdditionalPriceMultiplier());
-        return price.multiply(new BigDecimal(pizzaOrder.getQuantity()));
+        price = price.multiply(pizzaOrder.getSize().getAdditionalPriceMultiplier());
+        return price.multiply(new BigDecimal(pizzaOrder.getQuantity())).setScale(2, RoundingMode.UP);
     }
 
     public List<GetPizzaOrderDTO> viewPizzaOrders(HttpSession session) {

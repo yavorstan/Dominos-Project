@@ -8,9 +8,9 @@ import java.math.BigDecimal;
 public enum PizzaCrustEnum {
 
     //sample
-    NORMAL(new BigDecimal(0)),
-    ITALIAN(new BigDecimal(1.3)),
-    PHILADELPHIA(new BigDecimal(2.3));
+    NORMAL(new BigDecimal("0")),
+    ITALIAN(new BigDecimal("1.3")),
+    PHILADELPHIA(new BigDecimal("2.3"));
 
     private BigDecimal additionalPrice;
 
