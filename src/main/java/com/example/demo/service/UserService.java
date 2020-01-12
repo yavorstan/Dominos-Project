@@ -4,22 +4,28 @@ import com.example.demo.exceptions.ElementAlreadyExistsException;
 import com.example.demo.exceptions.ElementNotFoundException;
 import com.example.demo.exceptions.ErrorCreatingEntityException;
 import com.example.demo.exceptions.UnauthorizedAccessException;
-import com.example.demo.model.dto.GetUserDTO;
-import com.example.demo.model.dto.LoginUserDTO;
-import com.example.demo.model.dto.RegisterUserDTO;
+import com.example.demo.model.dto.*;
+import com.example.demo.model.entity.Address;
 import com.example.demo.model.entity.User;
+import com.example.demo.repository.AddressRepository;
 import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AddressRepository addressRepository;
 
     public GetUserDTO register(HttpSession session, RegisterUserDTO registerUserDTO) {
         if (isLoggedIn(session)) {
@@ -60,6 +66,49 @@ public class UserService {
         }
         session.invalidate();
     }
+
+    public GetAddressDTO addNewAddress(HttpSession session, PostAddressDTO postAddressDTO) {
+        if (!isLoggedIn(session)) {
+            throw new UnauthorizedAccessException("You must be logged in!");
+        }
+        User user = userRepository.findByEmail(session.getAttribute("email").toString())
+                .orElseThrow(() -> new ElementNotFoundException("No such user!"));
+        Address address = new Address(postAddressDTO.getCity(), postAddressDTO.getPhoneNumber(), postAddressDTO.getAddressDetails());
+        address.setUser(user);
+        addressRepository.save(address);
+        GetAddressDTO getAddressDTO = new GetAddressDTO(
+                address.getId(),
+                address.getCity(),
+                address.getPhoneNumber(),
+                address.getAddressDetails());
+        user.getAddresses().add(address);
+        return getAddressDTO;
+    }
+
+    public List<GetAddressDTO> getAllAddresses(HttpSession session){
+        if (!isLoggedIn(session)){
+            throw new UnauthorizedAccessException("You must be logged in!");
+        }
+        List<GetAddressDTO> getAddressDTOList = new ArrayList<>();
+        User user = userRepository.findByEmail(session.getAttribute("email").toString())
+                .orElseThrow(() -> new ElementNotFoundException("No such user!"));
+        user.getAddresses().stream()
+                .map(address -> new GetAddressDTO(address.getId(), address.getCity(), address.getPhoneNumber(), address.getAddressDetails()))
+                .forEach(getAddressDTO -> getAddressDTOList.add(getAddressDTO));
+        return Collections.unmodifiableList(getAddressDTOList);
+    }
+
+
+    public void deleteAddress(HttpSession session, Long id) {
+        if (!isLoggedIn(session)){
+            throw new UnauthorizedAccessException("You must be logged in!");
+        }
+        if (!addressRepository.existsById(id)){
+            throw new ElementNotFoundException("No such address found!");
+        }
+        addressRepository.deleteById(id);
+    }
+
 
     public boolean isLoggedIn(HttpSession session) {
         if (session.getAttribute("email") == null) {

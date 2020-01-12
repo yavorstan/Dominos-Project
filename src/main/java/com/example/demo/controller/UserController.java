@@ -1,21 +1,17 @@
 package com.example.demo.controller;
 
 import com.example.demo.exceptions.ErrorCreatingEntityException;
-import com.example.demo.model.dto.GetUserDTO;
-import com.example.demo.model.dto.LoginUserDTO;
-import com.example.demo.model.dto.RegisterUserDTO;
+import com.example.demo.model.dto.*;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -44,6 +40,27 @@ public class UserController {
     @PostMapping("/logout")
     public void logoutUser(HttpSession session) {
         userService.logoutUser(session);
+    }
+
+    @PostMapping("/addresses/addAddress")
+    public ResponseEntity<GetAddressDTO> addNewAddress(HttpSession session,
+                                                       @Valid @RequestBody PostAddressDTO postAddressDTO,
+                                                       Errors errors){
+        if (errors.hasErrors()){
+            throw new ErrorCreatingEntityException(errors.getFieldError().getDefaultMessage());
+        }
+        GetAddressDTO getAddressDTO = userService.addNewAddress(session, postAddressDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(getAddressDTO);
+    }
+
+    @GetMapping("/addresses")
+    public List<GetAddressDTO> getAllAddresses(HttpSession session){
+        return userService.getAllAddresses(session);
+    }
+
+    @DeleteMapping("/addresses/{id}")
+    public void deleteAddress(HttpSession session, @PathVariable (value = "id") Long id){
+        userService.deleteAddress(session, id);
     }
 
 }

@@ -11,17 +11,23 @@ import javax.persistence.*;
 @Setter
 @NoArgsConstructor
 public class Address {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
-    @OneToOne
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
-    @OneToOne
-    private City city;
-    @Column
+
+    private String city;
+
     private String phoneNumber;
-    @Column
+
     private String addressDetails;
 
-
+    public Address(String city, String phoneNumber, String addressDetails) {
+        this.city = city;
+        this.phoneNumber = phoneNumber;
+        this.addressDetails = addressDetails;
+    }
 }

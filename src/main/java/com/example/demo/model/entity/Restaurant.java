@@ -11,7 +11,7 @@ import javax.persistence.Entity;
 @NoArgsConstructor
 public class Restaurant {
     private long id;
-    private City city;
+    private String city;
     private String name;
     private String streetName;
     private int streetNumber;

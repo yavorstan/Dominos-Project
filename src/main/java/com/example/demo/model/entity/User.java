@@ -29,11 +29,11 @@ public class User {
 
     private String password;
 
-//    @OneToMany(
-//            mappedBy = "user",
-//            cascade = CascadeType.ALL,
-//            orphanRemoval = true)
-//    private List<Address> addresses;
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<Address> addresses = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "user",
