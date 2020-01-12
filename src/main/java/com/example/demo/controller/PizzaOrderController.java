@@ -7,6 +7,9 @@ import com.example.demo.service.PizzaOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
+import java.util.List;
+
 @RestController
 @RequestMapping("/pizza_orders")
 public class PizzaOrderController {
@@ -15,19 +18,30 @@ public class PizzaOrderController {
     private PizzaOrderService pizzaOrderService;
 
     @GetMapping("/{pizzaId}/options")
-    public GetPizzaOptionsDTO getPizzaOrderOptions(@PathVariable("pizzaId") Long id) {
-        return pizzaOrderService.getOptions(id);
+    public GetPizzaOptionsDTO getPizzaOrderOptions(HttpSession session, @PathVariable("pizzaId") Long id) {
+        return pizzaOrderService.getOptions(session, id);
     }
 
     @PostMapping("/{pizzaId}/addToCart")
-    public GetPizzaOrderDTO addPizzaOrderToCart(@PathVariable("pizzaId") Long pizzaId,
+    public GetPizzaOrderDTO addPizzaOrderToCart(HttpSession session,
+                                                @PathVariable("pizzaId") Long pizzaId,
                                                 @RequestBody PostPizzaOrderDTO postPizzaOrderDTO) {
-        return pizzaOrderService.addPizzaOrderToCart(pizzaId, postPizzaOrderDTO);
+        return pizzaOrderService.addPizzaOrderToCart(session, pizzaId, postPizzaOrderDTO);
+    }
+
+    @GetMapping
+    public List<GetPizzaOrderDTO> viewPizzaOrders(HttpSession session){
+        return pizzaOrderService.viewPizzaOrders(session);
+    }
+
+    @GetMapping("/buy")
+    public void buyPizzaOrdersInCart(HttpSession session){
+        pizzaOrderService.buyPizzaOrdersInCart(session);
     }
 
     @DeleteMapping("/{orderId}")
-    public void deletePizzaOrder(@PathVariable("orderId") Long id) {
-        pizzaOrderService.deletePizzaOrder(id);
+    public void deletePizzaOrder(HttpSession session, @PathVariable("orderId") Long id) {
+        pizzaOrderService.deletePizzaOrder(session, id);
     }
 
 }

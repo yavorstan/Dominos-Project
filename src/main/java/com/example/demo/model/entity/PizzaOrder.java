@@ -23,9 +23,6 @@ public class PizzaOrder {
     @ManyToOne(fetch = FetchType.LAZY)
     private Order order;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Cart cart;
-
     @OneToOne
     private Pizza pizza;
 
@@ -37,6 +34,8 @@ public class PizzaOrder {
 
     @ManyToMany
     private List<Ingredient> additionalIngredients;
+
+    private int quantity;
 
     private BigDecimal fullPrice;
 

@@ -6,6 +6,7 @@ import com.example.demo.exceptions.ErrorCreatingEntityException;
 import com.example.demo.exceptions.UnauthorizedAccessException;
 import com.example.demo.model.dto.*;
 import com.example.demo.model.entity.Address;
+import com.example.demo.model.entity.PizzaOrder;
 import com.example.demo.model.entity.User;
 import com.example.demo.repository.AddressRepository;
 import com.example.demo.repository.UserRepository;
@@ -14,9 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -61,16 +60,12 @@ public class UserService {
     }
 
     public void logoutUser(HttpSession session) {
-        if (!isLoggedIn(session)) {
-            throw new UnauthorizedAccessException("You are not logged in!");
-        }
+        checkIfLoggedIn(session);
         session.invalidate();
     }
 
     public GetAddressDTO addNewAddress(HttpSession session, PostAddressDTO postAddressDTO) {
-        if (!isLoggedIn(session)) {
-            throw new UnauthorizedAccessException("You must be logged in!");
-        }
+        checkIfLoggedIn(session);
         User user = userRepository.findByEmail(session.getAttribute("email").toString())
                 .orElseThrow(() -> new ElementNotFoundException("No such user!"));
         Address address = new Address(postAddressDTO.getCity(), postAddressDTO.getPhoneNumber(), postAddressDTO.getAddressDetails());
@@ -85,10 +80,8 @@ public class UserService {
         return getAddressDTO;
     }
 
-    public List<GetAddressDTO> getAllAddresses(HttpSession session){
-        if (!isLoggedIn(session)){
-            throw new UnauthorizedAccessException("You must be logged in!");
-        }
+    public List<GetAddressDTO> getAllAddresses(HttpSession session) {
+        checkIfLoggedIn(session);
         List<GetAddressDTO> getAddressDTOList = new ArrayList<>();
         User user = userRepository.findByEmail(session.getAttribute("email").toString())
                 .orElseThrow(() -> new ElementNotFoundException("No such user!"));
@@ -100,10 +93,10 @@ public class UserService {
 
 
     public void deleteAddress(HttpSession session, Long id) {
-        if (!isLoggedIn(session)){
+        if (!isLoggedIn(session)) {
             throw new UnauthorizedAccessException("You must be logged in!");
         }
-        if (!addressRepository.existsById(id)){
+        if (!addressRepository.existsById(id)) {
             throw new ElementNotFoundException("No such address found!");
         }
         addressRepository.deleteById(id);
@@ -117,10 +110,14 @@ public class UserService {
         return true;
     }
 
-    public void checkIfAdmin(HttpSession session) {
-        if (!isLoggedIn(session)) {
+    public void checkIfLoggedIn(HttpSession session){
+        if (session.getAttribute("email") == null){
             throw new UnauthorizedAccessException("You are not logged in!");
         }
+    }
+
+    public void checkIfAdmin(HttpSession session) {
+        checkIfLoggedIn(session);
         if (session.getAttribute("isAdmin").equals(false)) {
             throw new UnauthorizedAccessException("You have no administration rights!");
         }
@@ -137,5 +134,10 @@ public class UserService {
 
     private BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    public User findByEmail(HttpSession session) {
+        return userRepository.findByEmail(session.getAttribute("email").toString())
+                .orElseThrow(() -> new ElementNotFoundException("No such user found!"));
     }
 }
