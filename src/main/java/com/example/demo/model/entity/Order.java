@@ -20,7 +20,7 @@ public class Order {
 
     @OneToMany(
             mappedBy = "order",
-            cascade = CascadeType.ALL,
+            cascade = CascadeType.MERGE,
             orphanRemoval = true)
     private List<PizzaOrder> pizzaOrders = new ArrayList<>();
 

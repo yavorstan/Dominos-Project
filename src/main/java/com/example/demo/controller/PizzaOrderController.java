@@ -31,7 +31,7 @@ public class PizzaOrderController {
 
     @GetMapping
     public List<GetPizzaOrderDTO> viewPizzaOrders(HttpSession session){
-        return pizzaOrderService.viewPizzaOrders(session);
+        return pizzaOrderService.viewPizzaOrdersInCart(session);
     }
 
     @GetMapping("/buy")

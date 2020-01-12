@@ -44,6 +44,8 @@ public class UserService {
 
         userRepository.save(user);
         setSessionAttributes(session, user);
+        List<PizzaOrder> cart = new ArrayList<>();
+        session.setAttribute("cart", cart);
         return userEntityToDTO(user);
     }
 
@@ -55,6 +57,8 @@ public class UserService {
                 .orElseThrow(() -> new ElementNotFoundException("Invalid email and/or password!"));
         if (passwordEncoder().matches(loginUserDTO.getPassword(), user.getPassword())) {
             setSessionAttributes(session, user);
+            List<PizzaOrder> cart = new ArrayList<>();
+            session.setAttribute("cart", cart);
             return userEntityToDTO(user);
         } else throw new ElementNotFoundException("Invalid email and/or password!");
     }

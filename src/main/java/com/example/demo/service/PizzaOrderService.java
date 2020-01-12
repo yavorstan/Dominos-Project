@@ -8,6 +8,7 @@ import com.example.demo.model.entity.PizzaOrder;
 import com.example.demo.model.entity.User;
 import com.example.demo.model.enumeration.PizzaCrustEnum;
 import com.example.demo.model.enumeration.PizzaSizeEnum;
+import com.example.demo.model.enumeration.TypeOfOrder;
 import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.PizzaOrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,11 +57,10 @@ public class PizzaOrderService {
         pizzaOrder.setAdditionalIngredients(additionalIngredientsToAdd);
         pizzaOrder.setQuantity(postPizzaOrderDTO.getQuantity());
         pizzaOrder.setFullPrice(calculateFullPrice(pizzaOrder));
-
         GetPizzaOrderDTO getPizzaOrderDTO = pizzaOrderEntityToDTO(pizzaOrderRepository.save(pizzaOrder));
-        HashMap<Long, Integer> cart = new HashMap<>();
-        cart.put(getPizzaOrderDTO.getId(), getPizzaOrderDTO.getQuantity());
-        session.setAttribute("cart", cart);
+
+        List<PizzaOrder> cart = (List<PizzaOrder>) session.getAttribute("cart");
+        cart.add(pizzaOrder);
 
         return getPizzaOrderDTO;
     }
@@ -75,15 +75,13 @@ public class PizzaOrderService {
         return price.multiply(new BigDecimal(pizzaOrder.getQuantity())).setScale(2, RoundingMode.UP);
     }
 
-    public List<GetPizzaOrderDTO> viewPizzaOrders(HttpSession session) {
+    public List<GetPizzaOrderDTO> viewPizzaOrdersInCart(HttpSession session) {
         userService.checkIfLoggedIn(session);
         List<GetPizzaOrderDTO> getPizzaOrderDTOList = new ArrayList<>();
-        if (session.getAttribute("cart") == null) {
-            throw new ElementNotFoundException("No cart found!");
-        }
-        HashMap<Long, Integer> cart = (HashMap<Long, Integer>) session.getAttribute("cart");
-        for (Long id : cart.keySet()) {
-            getPizzaOrderDTOList.add(pizzaOrderEntityToDTO(pizzaOrderRepository.findById(id)
+        checkIfCartIsEmpty(session);
+        List<PizzaOrder> cart = (ArrayList<PizzaOrder>) session.getAttribute("cart");
+        for (PizzaOrder pizzaOrder : cart) {
+            getPizzaOrderDTOList.add(pizzaOrderEntityToDTO(pizzaOrderRepository.findById(pizzaOrder.getId())
                     .orElseThrow(() -> new ElementNotFoundException("No such pizza order!"))));
         }
         return Collections.unmodifiableList(getPizzaOrderDTOList);
@@ -91,17 +89,28 @@ public class PizzaOrderService {
 
     public void buyPizzaOrdersInCart(HttpSession session) {
         userService.checkIfLoggedIn(session);
+        checkIfCartIsEmpty(session);
         User user = userService.findByEmail(session);
         Order order = new Order();
         order.setUser(user);
+        order.setTypeOfOrder(TypeOfOrder.DELIVERY); // just for testing
+
+        List<PizzaOrder> cart = (ArrayList<PizzaOrder>) session.getAttribute("cart");
+        order.setPizzaOrders(cart);
+        //TODO fix this
+        orderRepository.save(order);
+        for (PizzaOrder pizzaOrder : cart){
+            pizzaOrderRepository.deleteById(pizzaOrder.getId());
+        }
         //TODO add to order and choose delivery type
 
     }
 
     public void deletePizzaOrder(HttpSession session, Long id) {
         userService.checkIfLoggedIn(session);
-        HashMap<Long, Integer> cart = (HashMap<Long, Integer>) session.getAttribute("cart");
-        cart.remove(id);
+        checkIfCartIsEmpty(session);
+        List<PizzaOrder> cart = (ArrayList<PizzaOrder>) session.getAttribute("cart");
+        cart.remove(pizzaOrderRepository.findById(id).orElseThrow(() -> new ElementNotFoundException("No such pizza Order")));
         pizzaOrderRepository.delete(pizzaOrderRepository.findById(id)
                 .orElseThrow(() -> new ElementNotFoundException("No pizza order with this id!")));
     }
@@ -130,5 +139,11 @@ public class PizzaOrderService {
                 .map(pizzaSizeEnum -> new GetPizzaSizeDTO(pizzaSizeEnum, pizzaSizeEnum.getAdditionalPriceMultiplier()))
                 .forEach(getPizzaSizeDTO -> getPizzaSizeDTOS.add(getPizzaSizeDTO));
         return getPizzaSizeDTOS;
+    }
+
+    private void checkIfCartIsEmpty(HttpSession session){
+        if (session.getAttribute("cart") == null) {
+            throw new ElementNotFoundException("Cart is empty!");
+        }
     }
 }
