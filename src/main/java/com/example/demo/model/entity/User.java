@@ -16,10 +16,8 @@ import java.util.List;
 public class User {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private boolean isAdmin;
 
     private String firstName;
 
@@ -47,4 +45,7 @@ public class User {
         this.email = email;
         this.password = password;
     }
+
+    private boolean isAdmin;
+
 }

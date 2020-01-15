@@ -15,7 +15,7 @@ public class CustomError {
 
     private String message;
 
-    @JsonFormat(pattern = "HH:mm:ss  dd-MM-yyyy")
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime time;
 
     public CustomError(String exception, String message, LocalDateTime time, int status) {

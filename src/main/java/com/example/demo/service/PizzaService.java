@@ -2,7 +2,6 @@ package com.example.demo.service;
 
 import com.example.demo.exceptions.ElementAlreadyExistsException;
 import com.example.demo.exceptions.ElementNotFoundException;
-import com.example.demo.exceptions.UnauthorizedAccessException;
 import com.example.demo.model.dto.GetIngredientDTO;
 import com.example.demo.model.dto.GetPizzaDTO;
 import com.example.demo.model.dto.PostPizzaDTO;
@@ -11,7 +10,6 @@ import com.example.demo.repository.PizzaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,11 +23,8 @@ public class PizzaService {
     @Autowired
     private IngredientService ingredientService;
 
-    @Autowired
-    private UserService userService;
 
-    public GetPizzaDTO createPizza(HttpSession session, PostPizzaDTO postPizzaDTO) {
-        userService.checkIfAdmin(session);
+    public GetPizzaDTO createPizza(PostPizzaDTO postPizzaDTO) {
         if (pizzaRepository.existsByName(postPizzaDTO.getName())) {
             throw new ElementAlreadyExistsException("Pizza with this name already exists!");
         }
@@ -39,7 +34,7 @@ public class PizzaService {
         postPizzaDTO
                 .getIngredients()
                 .stream()
-                .map(ingredient -> ingredientService.findIngredientByName(ingredient.toLowerCase()))
+                .map(ingredientId -> ingredientService.findById(ingredientId))
                 .forEach(ingredient -> pizza.getIngredients().add(ingredient));
         return pizzaEntityToDTO(pizzaRepository.save(pizza));
     }
@@ -53,15 +48,15 @@ public class PizzaService {
         return Collections.unmodifiableList(getPizzaResponse);
     }
 
-    public GetPizzaDTO updatePizzaPrice(HttpSession session, Long id, GetPizzaDTO getPizzaDTO) {
-        userService.checkIfAdmin(session);
+    public GetPizzaDTO updatePizzaPrice(Long id, GetPizzaDTO getPizzaDTO) {
         Pizza pizza = pizzaRepository.findById(id)
                 .orElseThrow(() -> new ElementNotFoundException("Pizza with this ID not found!"));
+        pizza.setPrice(getPizzaDTO.getPrice());
         return pizzaEntityToDTO(pizzaRepository.save(pizza));
+
     }
 
-    public void deletePizzaById(HttpSession session, Long id) {
-        userService.checkIfAdmin(session);
+    public void deletePizzaById(Long id) {
         pizzaRepository.delete(pizzaRepository.findById(id)
                 .orElseThrow(() -> new ElementNotFoundException("Pizza with this ID not found!")));
     }

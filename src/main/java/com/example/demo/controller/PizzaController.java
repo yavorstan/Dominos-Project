@@ -1,10 +1,10 @@
 package com.example.demo.controller;
 
-import com.example.demo.exceptions.ElementNotFoundException;
 import com.example.demo.exceptions.ErrorCreatingEntityException;
 import com.example.demo.model.dto.GetPizzaDTO;
 import com.example.demo.model.dto.PostPizzaDTO;
 import com.example.demo.service.PizzaService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -24,14 +24,18 @@ public class PizzaController {
         this.pizzaService = pizzaService;
     }
 
+    @Autowired
+    private SessionManager sessionManager;
+
     @PostMapping
     public ResponseEntity<GetPizzaDTO> createPizza(HttpSession session,
                                                    @Valid @RequestBody PostPizzaDTO postPizzaDTO,
                                                    Errors errors) {
+        sessionManager.checkIfAdmin(session);
         if (errors.hasErrors()) {
             throw new ErrorCreatingEntityException(errors.getFieldError().getDefaultMessage());
         }
-        GetPizzaDTO getPizzaDTO = pizzaService.createPizza(session, postPizzaDTO);
+        GetPizzaDTO getPizzaDTO = pizzaService.createPizza(postPizzaDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(getPizzaDTO);
     }
 
@@ -43,15 +47,16 @@ public class PizzaController {
     @PutMapping("/{id}")
     public ResponseEntity<GetPizzaDTO> updatePizzaPrice(HttpSession session,
                                                         @PathVariable("id") Long id,
-                                                        @RequestBody GetPizzaDTO getPizzaDTO)
-            throws ElementNotFoundException, IllegalArgumentException {
-        GetPizzaDTO response = pizzaService.updatePizzaPrice(session, id, getPizzaDTO);
+                                                        @RequestBody GetPizzaDTO getPizzaDTO) {
+        sessionManager.checkIfAdmin(session);
+        GetPizzaDTO response = pizzaService.updatePizzaPrice(id, getPizzaDTO);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/{id}")
     public void deletePizzaById(HttpSession session, @PathVariable("id") Long id) {
-        pizzaService.deletePizzaById(session, id);
+        sessionManager.checkIfAdmin(session);
+        pizzaService.deletePizzaById(id);
     }
 
 }

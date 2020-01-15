@@ -1,10 +1,10 @@
 package com.example.demo.model.entity;
 
-import com.example.demo.model.enumeration.TypeOfOrder;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +15,7 @@ import java.util.List;
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToMany(
@@ -27,7 +27,11 @@ public class Order {
     @ManyToOne
     private User user;
 
-    @Enumerated
-    private TypeOfOrder typeOfOrder;
+    private String comment;
+
+    @OneToOne
+    private Address address;
+
+    private LocalDateTime dateAndTimeOfCreation;
 
 }

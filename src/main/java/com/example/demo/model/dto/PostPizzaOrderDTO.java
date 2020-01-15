@@ -17,9 +17,7 @@ public class PostPizzaOrderDTO {
 
     private PizzaSizeEnum size;
     private PizzaCrustEnum crust;
-    private List<String> additionalIngredients;
-
-    @Min(value = 1, message = "Must be a positive number!")
+    private List<Long> additionalIngredients;
     private int quantity = DEFAULT_VALUE_FOR_QUANTITY;
 
 }

@@ -13,7 +13,6 @@ public class PostAddressDTO {
     private String city;
 
     @NotBlank(message = "Phone number is mandatory!")
-    //TODO regex for phone number
     private String phoneNumber;
 
     @NotBlank(message = "Address details are needed!")

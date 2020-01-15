@@ -4,6 +4,7 @@ import com.example.demo.exceptions.ErrorCreatingEntityException;
 import com.example.demo.model.dto.GetIngredientDTO;
 import com.example.demo.model.dto.PostIngredientDTO;
 import com.example.demo.service.IngredientService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -17,38 +18,43 @@ import java.util.List;
 @RequestMapping("/ingredients")
 public class IngredientController {
 
-    private final IngredientService ingredientService;
+    @Autowired
+    private IngredientService ingredientService;
 
-    public IngredientController(IngredientService ingredientService) {
-        this.ingredientService = ingredientService;
-    }
+    @Autowired
+    private SessionManager sessionManager;
+
 
     @PostMapping
     public ResponseEntity<GetIngredientDTO> createIngredient(HttpSession session,
                                                              @Valid @RequestBody PostIngredientDTO postIngredientDTO,
                                                              Errors errors) {
+        sessionManager.checkIfAdmin(session);
         if (errors.hasErrors()) {
             throw new ErrorCreatingEntityException(errors.getFieldError().getDefaultMessage());
         }
-        GetIngredientDTO response = ingredientService.createIngredient(session, postIngredientDTO);
+        GetIngredientDTO response = ingredientService.createIngredient(postIngredientDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/list")
-    public List<GetIngredientDTO> getIngredients() {
+    public List<GetIngredientDTO> getIngredients(HttpSession session) {
+        sessionManager.checkIfLoggedIn(session);
         return ingredientService.getIngredients();
     }
 
     @DeleteMapping("/{id}")
     public void deleteIngredient(HttpSession session, @PathVariable("id") Long id) {
-        ingredientService.deleteIngredient(session, id);
+        sessionManager.checkIfAdmin(session);
+        ingredientService.deleteIngredient(id);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<GetIngredientDTO> updateIngredientPrice(HttpSession session,
                                                                   @PathVariable("id") Long id,
                                                                   @RequestBody PostIngredientDTO postIngredientDTO) {
-        GetIngredientDTO response = ingredientService.updateIngredientPrice(session, id, postIngredientDTO);
+        sessionManager.checkIfAdmin(session);
+        GetIngredientDTO response = ingredientService.updateIngredientPrice(id, postIngredientDTO);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
