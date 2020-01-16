@@ -1,10 +1,11 @@
 package com.example.demo.controller;
 
+import com.example.demo.exceptions.ElementNotFoundException;
 import com.example.demo.exceptions.ErrorCreatingEntityException;
 import com.example.demo.exceptions.UnauthorizedAccessException;
 import com.example.demo.model.dto.*;
 import com.example.demo.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.sun.javaws.exceptions.InvalidArgumentException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -18,11 +19,14 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
     private UserService userService;
 
-    @Autowired
     private SessionManager sessionManager;
+
+    public UserController(SessionManager sessionManager, UserService userService) {
+        this.sessionManager = sessionManager;
+        this.userService = userService;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<GetUserDTO> registerUser(HttpSession session,
@@ -40,9 +44,14 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<GetUserDTO> loginUser(HttpSession session, @RequestBody LoginUserDTO loginUserDTO) {
+    public ResponseEntity<GetUserDTO> loginUser(HttpSession session,
+                                                @Valid @RequestBody LoginUserDTO loginUserDTO,
+                                                Errors errors) {
         if (sessionManager.isLoggedIn(session)) {
             throw new UnauthorizedAccessException("You are already logged in!");
+        }
+        if (errors.hasErrors()){
+            throw new ElementNotFoundException(errors.getFieldError().getDefaultMessage());
         }
         GetUserDTO getUserDTO = userService.loginUser(loginUserDTO);
         sessionManager.setSessionAttributes(session, getUserDTO.getEmail());
@@ -50,9 +59,10 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    public void logoutUser(HttpSession session) {
+    public ResponseEntity<String> logoutUser(HttpSession session) {
         sessionManager.checkIfLoggedIn(session);
         session.invalidate();
+        return ResponseEntity.status(HttpStatus.OK).body("Logout successful!");
     }
 
     @PostMapping("/addresses")
@@ -74,9 +84,16 @@ public class UserController {
     }
 
     @DeleteMapping("/addresses/{id}")
-    public void deleteAddress(HttpSession session, @PathVariable(value = "id") Long id) {
+    public ResponseEntity<String> deleteAddress(HttpSession session, @PathVariable(value = "id") Long id) {
         sessionManager.checkIfLoggedIn(session);
         userService.deleteAddress(id);
+        return ResponseEntity.status(HttpStatus.OK).body("Address deletion successful!");
+    }
+
+    @GetMapping("/orders")
+    public List<GetOrderDTO> getAllOrders(HttpSession session) {
+        sessionManager.checkIfLoggedIn(session);
+        return userService.getAllOrders(sessionManager.findUserByEmail(session));
     }
 
 }

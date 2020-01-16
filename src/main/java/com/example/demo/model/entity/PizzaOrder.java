@@ -2,6 +2,7 @@ package com.example.demo.model.entity;
 
 import com.example.demo.model.enumeration.PizzaCrustEnum;
 import com.example.demo.model.enumeration.PizzaSizeEnum;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +20,9 @@ public class PizzaOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @Transient
+    private Long indexForCart;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Order order;

@@ -4,7 +4,6 @@ import com.example.demo.exceptions.ErrorCreatingEntityException;
 import com.example.demo.model.dto.GetPizzaDTO;
 import com.example.demo.model.dto.PostPizzaDTO;
 import com.example.demo.service.PizzaService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -18,14 +17,14 @@ import java.util.List;
 @RequestMapping("/pizza")
 public class PizzaController {
 
-    private final PizzaService pizzaService;
+    private PizzaService pizzaService;
 
-    public PizzaController(PizzaService pizzaService) {
+    private SessionManager sessionManager;
+
+    public PizzaController(SessionManager sessionManager, PizzaService pizzaService) {
+        this.sessionManager = sessionManager;
         this.pizzaService = pizzaService;
     }
-
-    @Autowired
-    private SessionManager sessionManager;
 
     @PostMapping
     public ResponseEntity<GetPizzaDTO> createPizza(HttpSession session,
@@ -54,9 +53,10 @@ public class PizzaController {
     }
 
     @DeleteMapping("/{id}")
-    public void deletePizzaById(HttpSession session, @PathVariable("id") Long id) {
+    public ResponseEntity<String> deletePizzaById(HttpSession session, @PathVariable("id") Long id) {
         sessionManager.checkIfAdmin(session);
         pizzaService.deletePizzaById(id);
+        return ResponseEntity.status(HttpStatus.OK).body("Pizza deletion successful!");
     }
 
 }

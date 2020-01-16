@@ -1,5 +1,6 @@
 import com.example.demo.Application;
 import com.example.demo.controller.PizzaController;
+import com.example.demo.controller.SessionManager;
 import com.example.demo.exceptions.RestExceptionHandler;
 import com.example.demo.model.dto.GetIngredientDTO;
 import com.example.demo.model.dto.GetPizzaDTO;
@@ -9,6 +10,7 @@ import com.example.demo.model.entity.Pizza;
 import com.example.demo.repository.IngredientRepository;
 import com.example.demo.repository.PizzaRepository;
 import com.example.demo.service.PizzaService;
+import com.example.demo.service.UserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,6 +68,12 @@ public class PizzaControllerIntegrationTest {
     @Autowired
     private EntityManager em;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private SessionManager sessionManager;
+
     private MockMvc restPizzaMockMvc;
 
     private PostPizzaDTO postPizzaDTO;
@@ -81,20 +89,21 @@ public class PizzaControllerIntegrationTest {
 
     @Before
     public void initTest() {
-        postPizzaDTO = createPostPizzaDTO(em);
         ingredient = createIngredient(em);
+        postPizzaDTO = createPostPizzaDTO(em, ingredient);
         pizza = createPizzaEntity(em);
-
         mockHttpServletRequest.setSession(session);
         session = new MockHttpSession();
         session.setAttribute("email", "testMail");
+        sessionManager = new SessionManager(userService);
+        sessionManager.setSessionAttributes(session, session.getAttribute("email").toString());
         session.setAttribute("isAdmin", true);
     }
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final PizzaController pizzaController = new PizzaController(pizzaService);
+        final PizzaController pizzaController = new PizzaController(sessionManager, pizzaService);
         this.restPizzaMockMvc = MockMvcBuilders.standaloneSetup(pizzaController)
                 .setControllerAdvice(new RestExceptionHandler())
                 .setCustomArgumentResolvers(pageableArgumentResolver)
@@ -105,24 +114,19 @@ public class PizzaControllerIntegrationTest {
         Pizza pizza = new Pizza();
         pizza.setName(DEFAULT_PIZZA_NAME);
         pizza.setPrice(DEFAULT_PIZZA_PRICE);
-
         ArrayList<Ingredient> ingredients = new ArrayList<>();
-
         ingredients.add(ingredient);
-
         pizza.setIngredients(ingredients);
         return pizza;
     }
 
-    public static PostPizzaDTO createPostPizzaDTO(EntityManager em) {
+    public static PostPizzaDTO createPostPizzaDTO(EntityManager em, Ingredient ingredient) {
         PostPizzaDTO postPizzaDTO = new PostPizzaDTO();
         postPizzaDTO.setName(DEFAULT_PIZZA_NAME);
         postPizzaDTO.setPrice(DEFAULT_PIZZA_PRICE);
 
-        String ingredient = DEFAULT_FIRST_INGREDIENT_NAME;
-
-        ArrayList<String> ingredients = new ArrayList<>();
-        ingredients.add(ingredient);
+        ArrayList<Long> ingredients = new ArrayList<>();
+        ingredients.add(ingredient.getId());
         postPizzaDTO.setIngredients(ingredients);
         return postPizzaDTO;
     }
@@ -144,7 +148,6 @@ public class PizzaControllerIntegrationTest {
         GetIngredientDTO getIngredientDTO = new GetIngredientDTO();
         getIngredientDTO.setName(DEFAULT_FIRST_INGREDIENT_NAME);
         getIngredientDTO.setPrice(DEFAULT_INGREDIENT_PRICE);
-
         return getIngredientDTO;
     }
 
@@ -152,7 +155,6 @@ public class PizzaControllerIntegrationTest {
         Ingredient ingredient = new Ingredient();
         ingredient.setName(DEFAULT_FIRST_INGREDIENT_NAME);
         ingredient.setPrice(DEFAULT_INGREDIENT_PRICE);
-
         return ingredient;
     }
 
@@ -162,7 +164,11 @@ public class PizzaControllerIntegrationTest {
         int databaseSizeBeforeCreate = pizzaRepository.findAll().size();
 
         Ingredient ingredient = createIngredient(em);
-        ingredientRepository.saveAndFlush(ingredient);
+        ingredient = ingredientRepository.saveAndFlush(ingredient);
+
+        ArrayList<Long> ingredients = new ArrayList<>();
+        ingredients.add(ingredient.getId());
+        postPizzaDTO.setIngredients(ingredients);
 
         restPizzaMockMvc.perform(post("/pizza")
                 .session(session)
@@ -184,10 +190,10 @@ public class PizzaControllerIntegrationTest {
     @Transactional
     public void checkPizzaNameIsRequired() throws Exception {
         int databaseSizeBeforeTest = pizzaRepository.findAll().size();
-
         postPizzaDTO.setName(null);
 
         restPizzaMockMvc.perform(post("/pizza")
+                .session(session)
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(postPizzaDTO)))
                 .andExpect(status().isUnprocessableEntity());
@@ -200,10 +206,10 @@ public class PizzaControllerIntegrationTest {
     @Transactional
     public void checkPizzaPriceIsRequired() throws Exception {
         int databaseSizeBeforeTest = pizzaRepository.findAll().size();
-
         postPizzaDTO.setPrice(null);
 
         restPizzaMockMvc.perform(post("/pizza")
+                .session(session)
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(postPizzaDTO)))
                 .andExpect(status().isUnprocessableEntity());
@@ -216,10 +222,10 @@ public class PizzaControllerIntegrationTest {
     @Transactional
     public void checkPizzaIngredientsAreRequired() throws Exception {
         int databaseSizeBeforeTest = pizzaRepository.findAll().size();
-
         postPizzaDTO.setIngredients(null);
 
         restPizzaMockMvc.perform(post("/pizza")
+                .session(session)
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(postPizzaDTO)))
                 .andExpect(status().isUnprocessableEntity());

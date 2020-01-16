@@ -1,11 +1,13 @@
 import com.example.demo.Application;
 import com.example.demo.controller.IngredientController;
+import com.example.demo.controller.SessionManager;
 import com.example.demo.exceptions.RestExceptionHandler;
 import com.example.demo.model.dto.GetIngredientDTO;
 import com.example.demo.model.dto.PostIngredientDTO;
 import com.example.demo.model.entity.Ingredient;
 import com.example.demo.repository.IngredientRepository;
 import com.example.demo.service.IngredientService;
+import com.example.demo.service.UserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,6 +57,12 @@ public class IngredientControllerIntegrationTest {
     @Autowired
     private EntityManager em;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private SessionManager sessionManager;
+
     private MockMvc restIngredientMockMvc;
 
     private PostIngredientDTO postIngredientDTO;
@@ -65,6 +73,7 @@ public class IngredientControllerIntegrationTest {
 
     private MockHttpSession session;
 
+
     @Before
     public void initTest() {
         postIngredientDTO = createPostIngredientDTO(em);
@@ -73,13 +82,17 @@ public class IngredientControllerIntegrationTest {
         mockHttpServletRequest.setSession(session);
         session = new MockHttpSession();
         session.setAttribute("email", "testMail");
+
+        sessionManager = new SessionManager(userService);
+        sessionManager.setSessionAttributes(session, session.getAttribute("email").toString());
         session.setAttribute("isAdmin", true);
+
     }
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final IngredientController ingredientController = new IngredientController(ingredientService);
+        final IngredientController ingredientController = new IngredientController(sessionManager, ingredientService);
         this.restIngredientMockMvc = MockMvcBuilders.standaloneSetup(ingredientController)
                 .setControllerAdvice(new RestExceptionHandler())
                 .setCustomArgumentResolvers(pageableArgumentResolver)
@@ -137,6 +150,7 @@ public class IngredientControllerIntegrationTest {
         postIngredientDTO.setName(null);
 
         restIngredientMockMvc.perform(post("/ingredients")
+                .session(session)
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(postIngredientDTO)))
                 .andExpect(status().isUnprocessableEntity());
@@ -153,6 +167,7 @@ public class IngredientControllerIntegrationTest {
         postIngredientDTO.setPrice(null);
 
         restIngredientMockMvc.perform(post("/ingredients")
+                .session(session)
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(postIngredientDTO)))
                 .andExpect(status().isUnprocessableEntity());

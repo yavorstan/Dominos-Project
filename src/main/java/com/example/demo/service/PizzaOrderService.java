@@ -58,19 +58,21 @@ public class PizzaOrderService {
                 ? PizzaSizeEnum.MEDIUM : postPizzaOrderDTO.getSize());
         pizzaOrder.setCrust(postPizzaOrderDTO.getCrust() == null
                 ? PizzaCrustEnum.NORMAL : postPizzaOrderDTO.getCrust());
-        if (postPizzaOrderDTO.getAdditionalIngredients() != null) {
+        if (postPizzaOrderDTO.getIngredients() != null) {
             List<Ingredient> additionalIngredientsToAdd = new ArrayList<>();
-            postPizzaOrderDTO.getAdditionalIngredients()
+            postPizzaOrderDTO.getIngredients()
                     .forEach(ingredientId -> additionalIngredientsToAdd.add(ingredientService.findById(ingredientId)));
             pizzaOrder.setAdditionalIngredients(additionalIngredientsToAdd);
         }
         pizzaOrder.setQuantity(postPizzaOrderDTO.getQuantity());
         pizzaOrder.setFullPrice(calculateFullPrice(pizzaOrder));
-        //here saved it to repository
         GetPizzaOrderDTO getPizzaOrderDTO = pizzaOrderEntityToDTO(pizzaOrder);
+
         Map<String, Object> mapReturnedToController = new HashMap<>(2);
-        mapReturnedToController.put("getPizzaOrderDTO", getPizzaOrderDTO);
         cart.add(pizzaOrder);
+        pizzaOrder.setIndexForCart((long) cart.indexOf(pizzaOrder));
+        getPizzaOrderDTO.setIndexForCart((long) cart.indexOf(pizzaOrder));
+        mapReturnedToController.put("getPizzaOrderDTO", getPizzaOrderDTO);
         mapReturnedToController.put("arrayListPizzaOrders", cart);
         return Collections.unmodifiableMap(mapReturnedToController);
     }
@@ -113,14 +115,15 @@ public class PizzaOrderService {
         }
     }
 
-    public void deletePizzaOrder(Long id, ArrayList<PizzaOrder> cart) {
-        cart.remove(pizzaOrderRepository.findById(id)
-                .orElseThrow(() -> new ElementNotFoundException("No pizza order with this ID found!")));
-        pizzaOrderRepository.delete(pizzaOrderRepository.findById(id)
-                .orElseThrow(() -> new ElementNotFoundException("No pizza order with this ID found!")));
+    public ArrayList<PizzaOrder> deletePizzaOrder(Long index, ArrayList<PizzaOrder> cart) {
+        if (cart.size() <= index) {
+            throw new ElementNotFoundException("No pizza order with this index found!");
+        }
+        cart.remove(index.intValue());
+        return cart;
     }
 
-    private GetPizzaOrderDTO pizzaOrderEntityToDTO(PizzaOrder pizzaOrder) {
+    public GetPizzaOrderDTO pizzaOrderEntityToDTO(PizzaOrder pizzaOrder) {
         List<GetIngredientDTO> getIngredientDTOS;
         if (pizzaOrder.getAdditionalIngredients() != null) {
             getIngredientDTOS = new ArrayList<>();
@@ -130,7 +133,7 @@ public class PizzaOrderService {
                     .forEach(getIngredientDTO -> getIngredientDTOS.add(getIngredientDTO));
         } else getIngredientDTOS = null;
 
-        return new GetPizzaOrderDTO(pizzaOrder.getId(), pizzaOrder.getOrder(), pizzaOrder.getPizza(), pizzaOrder.getSize(),
+        return new GetPizzaOrderDTO(pizzaOrder.getId(), pizzaOrder.getIndexForCart(), pizzaOrder.getOrder(), pizzaOrder.getPizza(), pizzaOrder.getSize(),
                 pizzaOrder.getCrust(), getIngredientDTOS, pizzaOrder.getQuantity(), pizzaOrder.getFullPrice());
     }
 

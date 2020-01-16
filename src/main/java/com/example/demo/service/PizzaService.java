@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.exceptions.ElementAlreadyExistsException;
 import com.example.demo.exceptions.ElementNotFoundException;
+import com.example.demo.exceptions.ErrorCreatingEntityException;
 import com.example.demo.model.dto.GetIngredientDTO;
 import com.example.demo.model.dto.GetPizzaDTO;
 import com.example.demo.model.dto.PostPizzaDTO;
@@ -10,6 +11,7 @@ import com.example.demo.repository.PizzaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,6 +53,10 @@ public class PizzaService {
     public GetPizzaDTO updatePizzaPrice(Long id, GetPizzaDTO getPizzaDTO) {
         Pizza pizza = pizzaRepository.findById(id)
                 .orElseThrow(() -> new ElementNotFoundException("Pizza with this ID not found!"));
+        BigDecimal newPrice = getPizzaDTO.getPrice();
+        if (newPrice == null || newPrice.doubleValue() <= 0){
+            throw new ErrorCreatingEntityException("Enter a valid price!");
+        }
         pizza.setPrice(getPizzaDTO.getPrice());
         return pizzaEntityToDTO(pizzaRepository.save(pizza));
 

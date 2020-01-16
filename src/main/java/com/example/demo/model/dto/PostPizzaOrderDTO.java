@@ -17,7 +17,7 @@ public class PostPizzaOrderDTO {
 
     private PizzaSizeEnum size;
     private PizzaCrustEnum crust;
-    private List<Long> additionalIngredients;
+    private List<Long> ingredients;
     private int quantity = DEFAULT_VALUE_FOR_QUANTITY;
 
 }

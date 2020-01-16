@@ -8,6 +8,7 @@ import com.example.demo.model.dto.PostPizzaOrderDTO;
 import com.example.demo.model.entity.PizzaOrder;
 import com.example.demo.model.entity.User;
 import com.example.demo.service.PizzaOrderService;
+import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,11 +26,14 @@ import java.util.Map;
 @RequestMapping("/pizza_orders")
 public class PizzaOrderController {
 
-    @Autowired
     private PizzaOrderService pizzaOrderService;
 
-    @Autowired
     private SessionManager sessionManager;
+
+    public PizzaOrderController(SessionManager sessionManager, PizzaOrderService pizzaOrderService){
+        this.sessionManager = sessionManager;
+        this.pizzaOrderService = pizzaOrderService;
+    }
 
     @GetMapping("/{pizzaId}/options")
     public ResponseEntity<GetPizzaOptionsDTO> getPizzaOrderOptions(HttpSession session, @PathVariable("pizzaId") Long id) {
@@ -65,7 +69,9 @@ public class PizzaOrderController {
 
     @GetMapping("/buy")
     @Transactional
-    public void buyPizzaOrdersInCart(HttpSession session, @Valid @RequestBody PostOrderDTO postOrderDTO, Errors errors) {
+    public ResponseEntity<String> buyPizzaOrdersInCart(HttpSession session,
+                                                       @Valid @RequestBody PostOrderDTO postOrderDTO,
+                                                       Errors errors) {
         sessionManager.checkIfCartIsEmpty(session);
         if (errors.hasErrors()) {
             throw new ErrorCreatingEntityException(errors.getFieldError().getDefaultMessage());
@@ -74,12 +80,15 @@ public class PizzaOrderController {
         User user = sessionManager.findUserByEmail(session);
         pizzaOrderService.buyPizzaOrdersInCart(user, cart, postOrderDTO);
         sessionManager.emptyCart(session);
+        return ResponseEntity.status(HttpStatus.OK).body("Thank you for your order!");
     }
 
     @DeleteMapping("/{orderId}")
-    public void deletePizzaOrderFromCart(HttpSession session, @PathVariable("orderId") Long id) {
+    public ResponseEntity<String> deletePizzaOrderFromCart(HttpSession session, @PathVariable("orderId") Long id) {
         sessionManager.checkIfCartIsEmpty(session);
-        pizzaOrderService.deletePizzaOrder(id, sessionManager.getCartAttribute(session));
+        ArrayList<PizzaOrder> cart = pizzaOrderService.deletePizzaOrder(id, sessionManager.getCartAttribute(session));
+        sessionManager.setCartAttribute(session, cart);
+        return ResponseEntity.status(HttpStatus.OK).body("Deletion from cart successful!");
     }
 
 }

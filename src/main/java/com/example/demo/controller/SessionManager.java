@@ -5,7 +5,6 @@ import com.example.demo.exceptions.UnauthorizedAccessException;
 import com.example.demo.model.entity.PizzaOrder;
 import com.example.demo.model.entity.User;
 import com.example.demo.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpSession;
@@ -14,13 +13,19 @@ import java.util.ArrayList;
 @Component
 public class SessionManager {
 
-    @Autowired
     private UserService userService;
+
+    public SessionManager(UserService userService) {
+        this.userService = userService;
+    }
 
     public void setSessionAttributes(HttpSession session, String email) {
         session.setAttribute("email", email);
-        session.setAttribute("isAdmin", false);
         session.setAttribute("cart", new ArrayList<PizzaOrder>());
+        if (session.getAttribute("email").equals("admin@site.com")){
+            session.setAttribute("isAdmin", true);
+        }
+        else session.setAttribute("isAdmin", false);
     }
 
     public void setCartAttribute(HttpSession session, ArrayList<PizzaOrder> cart) {

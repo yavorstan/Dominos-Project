@@ -4,6 +4,7 @@ import com.example.demo.model.entity.Order;
 import com.example.demo.model.entity.Pizza;
 import com.example.demo.model.enumeration.PizzaCrustEnum;
 import com.example.demo.model.enumeration.PizzaSizeEnum;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,8 @@ import java.util.List;
 public class GetPizzaOrderDTO {
 
     private long id;
+    private Long indexForCart;
+    @JsonIgnore
     private Order order;
     private Pizza pizza;
     private PizzaSizeEnum size;

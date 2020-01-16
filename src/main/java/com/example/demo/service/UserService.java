@@ -5,8 +5,10 @@ import com.example.demo.exceptions.ElementNotFoundException;
 import com.example.demo.exceptions.ErrorCreatingEntityException;
 import com.example.demo.model.dto.*;
 import com.example.demo.model.entity.Address;
+import com.example.demo.model.entity.Order;
 import com.example.demo.model.entity.User;
 import com.example.demo.repository.AddressRepository;
+import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,6 +26,12 @@ public class UserService {
 
     @Autowired
     private AddressRepository addressRepository;
+
+    @Autowired
+    private PizzaOrderService pizzaOrderService;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     public GetUserDTO register(RegisterUserDTO registerUserDTO) {
         if (userRepository.existsByEmail(registerUserDTO.getEmail())) {
@@ -70,6 +78,18 @@ public class UserService {
         return Collections.unmodifiableList(getAddressDTOList);
     }
 
+    public List<GetOrderDTO> getAllOrders(User user) {
+        if (user.getOrders().isEmpty()) {
+            throw new ElementNotFoundException("You have no past orders!");
+        }
+        ArrayList<Order> orders = orderRepository.findAllByUser(user);
+        List<GetOrderDTO> getOrderDTOList = new ArrayList<>();
+        orders.stream()
+                .map(order -> orderEntityToDTO(order))
+                .forEach(getOrderDTO -> getOrderDTOList.add(getOrderDTO));
+        return Collections.unmodifiableList(getOrderDTOList);
+    }
+
     public void deleteAddress(Long id) {
         if (!addressRepository.existsById(id)) {
             throw new ElementNotFoundException("No such address found!");
@@ -79,6 +99,25 @@ public class UserService {
 
     public GetUserDTO userEntityToDTO(User user) {
         return new GetUserDTO(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail());
+    }
+
+    public GetOrderDTO orderEntityToDTO(Order order) {
+        GetOrderDTO getOrderDTO = new GetOrderDTO();
+        getOrderDTO.setId(order.getId());
+
+        List<GetPizzaOrderDTO> getPizzaOrderDTOList = new ArrayList<>();
+        order.getPizzaOrders().stream()
+                .map(pizzaOrder -> pizzaOrderService.pizzaOrderEntityToDTO(pizzaOrder))
+                .forEach(getPizzaOrderDTO -> getPizzaOrderDTOList.add(getPizzaOrderDTO));
+        getOrderDTO.setPizzaOrders(getPizzaOrderDTOList);
+        getOrderDTO.setAddress(addressEntityToDTO(order.getAddress()));
+        getOrderDTO.setComment(order.getComment());
+        getOrderDTO.setDateAndTimeOfCreation(order.getDateAndTimeOfCreation());
+        return getOrderDTO;
+    }
+
+    public GetAddressDTO addressEntityToDTO(Address address) {
+        return new GetAddressDTO(address.getId(), address.getCity(), address.getPhoneNumber(), address.getAddressDetails());
     }
 
     private BCryptPasswordEncoder passwordEncoder() {
