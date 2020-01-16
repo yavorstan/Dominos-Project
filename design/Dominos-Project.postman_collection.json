@@ -1,0 +1,699 @@
+{
+	"info": {
+		"_postman_id": "23373ae3-cc02-4d43-adf0-2104557c2388",
+		"name": "Dominos-Project",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Yavor",
+			"item": [
+				{
+					"name": "Pizza",
+					"item": [
+						{
+							"name": "create Pizza",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Master-Burger\",\n    \"price\": 14.99,\n    \"ingredients\": [\n        4, 11, 13, 22, 24\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/pizza",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"pizza"
+									],
+									"query": [
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get Menu",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/pizza/menu",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"pizza",
+										"menu"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update Pizza Price",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"price\": 11.99\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/pizza/6",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"pizza",
+										"6"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete Pizza",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/pizza/52",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"pizza",
+										"52"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Ingredients",
+					"item": [
+						{
+							"name": "create Ingredient",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"name\": \"pesto sos\",\n\t\"price\": 1.1\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/ingredients",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"ingredients"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get Ingredients List",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/ingredients/list",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"ingredients",
+										"list"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update Ingredient Price",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"price\": 2.1\n\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/ingredients/23",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"ingredients",
+										"23"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete Ingredient",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/ingredients/50",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"ingredients",
+										"50"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Users",
+					"item": [
+						{
+							"name": "register User",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"firstName\": \"Yavor\",\n\t\"lastName\": \"Stanoev\",\n\t\"email\": \"yavor_stanoev@gmail.com\",\n\t\"password\": \"Pass12345\",\n\t\"repeatPassword\": \"Pass12345\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/users/register",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"register"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "login User",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"email\": \"john_doe@abv.bg\",\n\t\"password\": \"Test12345\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/users/login",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "login Admin",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"email\": \"admin@site.com\",\n\t\"password\": \"admin\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/users/login",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "logout User/Admin",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/users/logout",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"logout"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "add new Address",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"city\": \"Sofia\",\n\t\"phoneNumber\": \"1234567\",\n\t\"addressDetails\": \"Vasil Levski st. Number 52\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/users/addresses",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"addresses"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get all Addresses",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/users/addresses",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"addresses"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete Address",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/users/addresses/7",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"addresses",
+										"7"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "view All Orders",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/users/orders",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"orders"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Orders",
+					"item": [
+						{
+							"name": "get Pizza Order Options",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/pizza_orders/6/options",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"pizza_orders",
+										"6",
+										"options"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "add Pizza Order to cart",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"size\": \"SMALL\",\n\t\"crust\": \"ITALIAN\",\n\t\"ingredients\": [5, 6],\n\t\"quantity\": 2\n\t\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/pizza_orders/6/add_to_cart",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"pizza_orders",
+										"6",
+										"add_to_cart"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete Pizza Order from cart",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/pizza_orders/1",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"pizza_orders",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "view Pizza Orders in cart",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/pizza_orders",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"pizza_orders"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "buy Pizza Orders from cart",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"address\": 1,\n\t\"comment\": \"Evala\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/pizza_orders/buy",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"pizza_orders",
+										"buy"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
